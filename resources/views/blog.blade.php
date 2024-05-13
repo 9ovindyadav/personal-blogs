@@ -6,7 +6,7 @@
 			<a rel="noopener noreferrer" href="#" target="_blank" class="underline dark:text-violet-600">
 				<span itemprop="name">{{ $blog->author->name }}</span>
 			</a>on
-			<time datetime="2021-02-12 15:34:18-0200">Feb 12th 2021</time>
+			<time datetime="2021-02-12 15:34:18-0200">{{ \Carbon\Carbon::parse($blog->published_at)->diffForHumans() }}</time>
 		</p>
 	</div>
 	<div class="dark:text-gray-800">

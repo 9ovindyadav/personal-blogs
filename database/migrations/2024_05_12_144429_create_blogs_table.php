@@ -22,7 +22,7 @@ class CreateBlogsTable extends Migration
             $table->string('banner_img')->nullable();
             $table->foreignId('author_id');
             $table->foreignId('category_id');
-            $table->datetime('published_at');
+            $table->timestamp('published_at');
             $table->timestamps();
         });
     }

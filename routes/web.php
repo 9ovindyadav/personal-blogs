@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\SessionController;
+use App\Http\Controllers\ProfileController;
 
 use App\Models\Blog;
 use App\Models\User;
@@ -23,16 +24,18 @@ Route::get('blog/{blog:slug}', function (Blog $blog) {
     ]);
 });
 
-Route::get('profile/{user:username}', function (User $user) {
-    
-    return view('profile',[
-        'blog' => $user
-    ]);
+Route::middleware('guest')->group(function (){
+    Route::get('signup', [RegisterController::class,'create']);
+    Route::post('signup', [RegisterController::class,'store']);
+
+    Route::get('login', [SessionController::class,'create']);
+    Route::post('login', [SessionController::class,'store']);
 });
 
-Route::get('signup', [RegisterController::class,'create'])->middleware('guest');
-Route::post('signup', [RegisterController::class,'store'])->middleware('guest');
+Route::get('profile/{user:username}', [ProfileController::class,'index']);
 
-Route::get('login', [SessionController::class,'create'])->middleware('guest');
-Route::post('login', [SessionController::class,'store'])->middleware('guest');
-Route::get('logout', [SessionController::class,'destroy'])->middleware('auth');
+Route::middleware('auth')->group(function (){
+    Route::get('logout', [SessionController::class,'destroy']);
+    Route::get('profile/edit/{user:username}', [ProfileController::class,'edit']);
+    Route::post('profile/update/{user:username}', [ProfileController::class,'update']);
+});

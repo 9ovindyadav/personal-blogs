@@ -1,31 +1,29 @@
-<x-layout title="Blogs">
+<x-layout title="{{ env('APP_NAME') }}">
+	<div class="grid gap-8 lg:grid-cols-2">
 	@foreach($blogs as $blog)
-		<div class="dark:bg-gray-100 dark:text-gray-900 mb-10">
-			<div class="container grid grid-cols-12 mx-auto dark:bg-gray-50">
-				<div class="bg-no-repeat bg-cover dark:bg-gray-300 col-span-full lg:col-span-4" style="background-image: url('https://source.unsplash.com/random/640x480'); background-position: center center; background-blend-mode: multiply; background-size: cover;"></div>
-				<div class="flex flex-col p-6 col-span-full row-span-full lg:col-span-8 lg:p-10">
-					<div class="flex justify-start">
-						<span class="px-2 py-1 text-xs rounded-full dark:bg-violet-600 dark:text-gray-50">{{ $blog->category->name }}</span>
-					</div>
-					<a href="blog/{{ $blog->slug }}" class="text-3xl font-semibold">{{ $blog->title }}</a>
-					<p class="flex-1 pt-2">{{ $blog->extends }}</p>
-					<a rel="noopener noreferrer" href="blog/{{ $blog->slug }}" class="inline-flex items-center pt-2 pb-6 space-x-2 text-sm dark:text-violet-600">
-						<span>Read more</span>
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-							<path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-						</svg>
-					</a>
-					<div class="flex items-center justify-between pt-2">
-						<div class="flex space-x-2">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 dark:text-gray-600">
-								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"></path>
-							</svg>
-							<span class="self-center text-sm">by {{ $blog->author->name }}</span>
-						</div>
-						<span class="text-xs">3 min read</span>
-					</div>
-				</div>
+		<article class="p-6 bg-white rounded-lg border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700">
+			<div class="flex justify-between items-center mb-5 text-gray-500">
+				<span class="bg-primary-100 text-primary-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded dark:bg-primary-200 dark:text-primary-800">
+					<!-- <svg class="mr-1 w-3 h-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"></path></svg> -->
+					{{ $blog->category->name }}
+				</span>
+				<span class="text-sm">{{ \Carbon\Carbon::parse($blog->published_at)->diffForHumans() }}</span>
 			</div>
-		</div>
-	@endforeach
+			<h2 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white"><a href="blog/{{ $blog->slug }}">{{ $blog->title }}</a></h2>
+			<p class="mb-5 font-light text-gray-500 dark:text-gray-400">{{ $blog->extends }}</p>
+			<div class="flex justify-between items-center">
+				<div class="flex items-center space-x-4">
+					<img class="w-7 h-7 rounded-full" src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/avatars/jese-leos.png" alt="Jese Leos avatar" />
+					<span class="font-medium dark:text-white">
+					{{ $blog->author->name }}
+					</span>
+				</div>
+				<a href="blog/{{ $blog->slug }}" class="inline-flex items-center font-medium text-primary-600 dark:text-primary-500 hover:underline">
+					Read more
+					<svg class="ml-2 w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+				</a>
+			</div>
+		</article> 
+		@endforeach
+	</div>
 </x-layout>

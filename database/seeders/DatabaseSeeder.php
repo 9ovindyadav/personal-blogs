@@ -17,10 +17,21 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $user = User::factory()->create();
-        $category = Category::factory()->create();
+        $user = User::factory()->create([
+            'name' => 'Govind Yadav',
+            'username' => '9ovindyadav',
+            'email' => 'govindsvyadav@gmail.com',
+            'password' => 'asdfghjkl'
+        ]);
+        $category = Category::factory()->create([
+            'name' => 'Computer Science',
+            'slug' => 'computer-science'
+        ]);
 
-        $blog = Blog::factory(50)->create();
+        $blog = Blog::factory(50)->create([
+            'author_id' => $user->id,
+            'category_id' => $category->id
+        ]);
 
     }
 }
