@@ -12,7 +12,9 @@ class ProfileController extends Controller
 {
     public function index(User $user)
     {
-        $user->with('blogs');
+        $user->load(['blogs' => function ($query){
+            $query->orderBy('published_at','desc');
+        }]);
 
         return view('profile.index',['user' => $user]);
     }

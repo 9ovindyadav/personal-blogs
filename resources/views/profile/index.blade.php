@@ -20,14 +20,16 @@
 
         </a>
     </div>
+    @if(auth()->check() && $user->id === auth()->user()->id)
     <div class="w-1/2 flex justify-end">
         <a href="/profile/edit/{{ $user->username }}">Edit <i class="fa-solid fa-pen-to-square"></i></a>
     </div>
+    @endif
 </div>
 
 <div class="grid gap-8 lg:grid-cols-2 my-10">
 	@foreach($user->blogs as $blog)
-		<article class="p-6 bg-white rounded-lg border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700">
+		<article class="flex flex-col justify-between p-6 bg-white rounded-lg border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700">
 			<h2 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white"><a href="/blog/{{ $blog->slug }}">{{ $blog->title }}</a></h2>
 			<p class="mb-5 font-light text-gray-500 dark:text-gray-400">
                 {{ $blog->extends }}

@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
             'slug' => 'computer-science'
         ]);
 
-        $blog = Blog::factory(50)->create([
+        $blog = Blog::factory(5)->create([
             'author_id' => $user->id,
             'category_id' => $category->id
         ]);

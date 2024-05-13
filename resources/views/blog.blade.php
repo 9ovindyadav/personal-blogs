@@ -3,7 +3,7 @@
 	<div class="w-full mx-auto space-y-4 text-left">
 		<h1 class="text-4xl font-bold leading-tight md:text-5xl">{{ $blog->title }}</h1>
 		<p class="text-sm dark:text-gray-600">by
-			<a rel="noopener noreferrer" href="#" target="_blank" class="underline dark:text-violet-600">
+			<a rel="noopener noreferrer" href="/profile/{{ $blog->author->username }}" class="underline dark:text-violet-600">
 				<span itemprop="name">{{ $blog->author->name }}</span>
 			</a>on
 			<time datetime="2021-02-12 15:34:18-0200">{{ \Carbon\Carbon::parse($blog->published_at)->diffForHumans() }}</time>
@@ -14,10 +14,10 @@
 	</div>
 	<div class="pt-12 border-t dark:border-gray-300">
 		<div class="flex flex-col space-y-4 md:space-y-0 md:space-x-6 md:flex-row">
-			<img src="https://source.unsplash.com/75x75/?portrait" alt="" class="self-center flex-shrink-0 w-24 h-24 border rounded-full md:justify-self-start dark:bg-gray-500 dark:border-gray-300">
+			<img src="{{ asset($blog->author->profile_img) }}" alt="" class="self-center flex-shrink-0 w-24 h-24 border rounded-full md:justify-self-start dark:bg-gray-500 dark:border-gray-300">
 			<div class="flex flex-col">
-				<h4 class="text-lg font-semibold">{{ $blog->author->name }}</h4>
-				<p class="dark:text-gray-600">Sed non nibh iaculis, posuere diam vitae, consectetur neque. Integer velit ligula, semper sed nisl in, cursus commodo elit. Pellentesque sit amet mi luctus ligula euismod lobortis ultricies et nibh.</p>
+				<a href="/profile/{{ $blog->author->username }}" class="text-lg font-semibold">{{ $blog->author->name }} | {{ $blog->author->profession }}</a>
+				<p class="dark:text-gray-600">{{ $blog->author->about_info }}</p>
 			</div>
 		</div>
 		<div class="flex justify-center pt-4 space-x-4 align-center">

@@ -10,8 +10,8 @@ use App\Models\Blog;
 use App\Models\User;
 
 Route::get('/', function () {
-    $blogs = Blog::with('category','author')->get();
-
+    $blogs = Blog::with('category','author')->orderBy('published_at','desc')->paginate(10);
+    // return $blogs;
     return view('blogs',[
         'blogs' => $blogs
     ]);
