@@ -11,8 +11,6 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 RUN docker-php-ext-install pdo pdo_mysql
 
-RUN mkdir -p /home/app && chown -R www-data:www-data /home/app
+RUN chown -R www-data:www-data /var/www
 
-RUN mkdir -p /home/app/storage && chown -R www-data:www-data /home/app/storage
-
-WORKDIR /home/app
+WORKDIR /var/www

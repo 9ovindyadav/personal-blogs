@@ -6,9 +6,9 @@ services:
     container_name: app-php
     restart: always
     user: 'www-data:www-data'
-    working_dir: /home/app
+    working_dir: /var/www
     volumes:
-      - ./:/home/app
+      - ./:/var/www
   nginx:
     image: nginx:1.19-alpine
     container_name: app-nginx
@@ -16,5 +16,5 @@ services:
     ports:
       - 8000:80
     volumes:
-      - ./:/home/app
+      - ./:/var/www
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
