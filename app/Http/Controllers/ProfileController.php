@@ -15,7 +15,7 @@ class ProfileController extends Controller
         $user->load(['blogs' => function ($query){
             $query->orderBy('published_at','desc');
         }]);
-
+       
         return view('profile.index',['user' => $user]);
     }
 

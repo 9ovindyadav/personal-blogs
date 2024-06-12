@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+use Lab404\Impersonate\Models\Impersonate;
+
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, Impersonate;
 
     /**
      * The attributes that are mass assignable.
@@ -45,5 +47,15 @@ class User extends Authenticatable
     public function blogs()
     {
         return $this->hasMany(Blog::class,'author_id');
+    }
+
+    public function canImpersonate()
+    {
+        return $this->is_admin;
+    }
+
+    public function canBeImpersonated()
+    {
+        return !$this->is_admin;
     }
 }

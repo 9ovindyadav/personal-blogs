@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AdminController;
 
 use App\Models\Blog;
 use App\Models\User;
@@ -28,7 +29,7 @@ Route::middleware('guest')->group(function (){
     Route::get('signup', [RegisterController::class,'create']);
     Route::post('signup', [RegisterController::class,'store']);
 
-    Route::get('login', [SessionController::class,'create']);
+    Route::get('login', [SessionController::class,'create'])->name('login');
     Route::post('login', [SessionController::class,'store']);
 });
 
@@ -39,3 +40,9 @@ Route::middleware('auth')->group(function (){
     Route::get('profile/edit/{user:username}', [ProfileController::class,'edit']);
     Route::post('profile/update/{user:username}', [ProfileController::class,'update']);
 });
+
+Route::middleware(['auth','admin'])->group(function (){
+    Route::get('admin', [AdminController::class,'index']);
+});
+
+Route::impersonate();
