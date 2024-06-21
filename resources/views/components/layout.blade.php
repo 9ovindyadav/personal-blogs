@@ -61,9 +61,7 @@
     <x-navbar></x-navbar>
 
     <main class="mt-20">
-      <div class="mx-3 py-6 sm:px-6 lg:px-8">
-          {{ $slot }}
-      </div>
+        {{ $slot }}
     </main>
 
     <x-flash></x-flash>

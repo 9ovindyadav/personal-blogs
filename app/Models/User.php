@@ -9,9 +9,11 @@ use Illuminate\Notifications\Notifiable;
 
 use Lab404\Impersonate\Models\Impersonate;
 
+use App\Traits\DynamicRelationship;
+
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, Impersonate;
+    use HasFactory, Notifiable, Impersonate, DynamicRelationship;
 
     /**
      * The attributes that are mass assignable.

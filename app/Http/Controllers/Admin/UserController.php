@@ -1,32 +1,46 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
 
-class ProfileController extends Controller
+class UserController extends Controller
 {
-    public function index(User $user)
+    public function index()
     {
-        $user->load(['blogs' => function ($query){
-            $query->orderBy('published_at','desc');
-        }]);
-       
-        return view('user.profile',['user' => $user]);
+        $users = User::all();
+        
+        return view('user.list',['users' => $users]);
+    }
+
+    public function view(User $user)
+    {
+        return view('user.view',['user' => $user]);
+    }
+
+    public function create()
+    {
+        return view('user.form',['formTitle' => 'Create New User']);
+    }
+
+    public function store()
+    {
+
     }
 
     public function edit(User $user)
     {
-        return view('user.form',['user' => $user, 'formTitle' => 'Update Profile']);
+        return view('user.form',['user' => $user, 'formTitle' => 'Edit User']);
     }
 
     public function update()
     {
-        $user = auth()->user();
+        $user = User::find(request()->input('user_id'));
 
         $attributes = request()->validate([
             'name' => 'required|max:255',
@@ -50,6 +64,6 @@ class ProfileController extends Controller
 
         $user->update($attributes);
 
-        return redirect("/profile/{$user->username}")->with('success','Profile updated successfully');
+        return redirect('/admin/users')->with('success','User updated successfully');
     }
 }

@@ -4,10 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 
-use App\Models\User;
-use App\Models\Category;
-use App\Models\Blog;
-
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -17,21 +13,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $user = User::factory()->create([
-            'name' => 'Govind Yadav',
-            'username' => '9ovindyadav',
-            'email' => 'govind@gmail.com',
-            'password' => 'asdfghjkl'
+        $this->call([
+            UserSeeder::class,
+            CategorySeeder::class,
+            BlogSeeder::class,
+            RelationshipSeeder::class
         ]);
-        $category = Category::factory()->create([
-            'name' => 'Computer Science',
-            'slug' => 'computer-science'
-        ]);
-
-        $blog = Blog::factory(5)->create([
-            'author_id' => $user->id,
-            'category_id' => $category->id
-        ]);
-
     }
 }

@@ -4,6 +4,10 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 
+use App\Models\Blog;
+use App\Models\User;
+use App\Models\Category;
+
 class BlogSeeder extends Seeder
 {
     /**
@@ -13,6 +17,14 @@ class BlogSeeder extends Seeder
      */
     public function run()
     {
-        //
+        Blog::factory()
+            ->count(10)
+            ->sequence(function($sequence) {
+                return [
+                    'author_id' => User::all()->random(),
+                    'category_id' => Category::all()->random()
+                ];
+            })
+            ->create();
     }
 }
