@@ -23,95 +23,107 @@
         </div>
         @if(auth()->check() && $user->id === auth()->user()->id)
         <div class="w-1/2 flex justify-end">
-            <a href="/profile/edit/{{ $user->username }}">Edit <i class="fa-solid fa-pen-to-square"></i></a>
+            <a href="/profile/{{ $user->username }}/edit">Edit <i class="fa-solid fa-pen-to-square"></i></a>
         </div>
         @endif
     </div>
 
     <div class="p-5">
-        <h2 class="text-xl my-2">Contacts</h2>
-        @php
-            $contacts = $user->relation('contact')->get();
-        @endphp
+        <div class="gap-8">
+        <div class="w-1/2">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl my-2">Contacts</h2>
+                @if(auth()->check() && $user->id === auth()->user()->id)
+                <a href="/contact/create" class="text-gray-600 hover:bg-gray-500 hover:text-white rounded-md px-3 py-1 text-sm font-medium">Add Contact</a>
+                @endif
+            </div>
+            @php
+                $contacts = $user->relation('contact')->get();
+            @endphp
 
-        @if($contacts->isNotEmpty())
-        <table class="min-w-1/2 text-start text-sm font-light text-surface dark:text-white">
-            <thead
-                class="border-b border-neutral-200 font-medium dark:border-white/10">
-                <tr>
-                <th scope="col" class="px-6 py-2">ID</th>
-                <th scope="col" class="px-6 py-2">Phone</th>
-                <th scope="col" class="px-6 py-2">Status</th>
-                <th scope="col" class="px-6 py-2">Last Updated</th>
-                <th scope="col" class="px-6 py-2">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($contacts as $contact)
-                <tr class="border-b border-neutral-200 dark:border-white/10 text-center">
-                    <td class="whitespace-nowrap px-6 py-2 font-medium">{{ $contact->id }}</td>
-                    <td class="whitespace-nowrap px-6 py-2">{{ $contact->phone }}</td>
-                    <td class="whitespace-nowrap px-6 py-2">
-                        <span class="text-gray-600 text-sm font-medium">
-                        {{ $contact->is_primary ? 'Primary' : '' }}
-                        </span>
-                    </td>
-                    <td class="whitespace-nowrap px-6 py-2">{{ $user->created_at->format('d M Y H:i A') }}</td>
-                    <td>
-                        <a href="/admin/user/{{ $user->username }}">Edit</a>
-                        <a href="/admin/user/{{ $user->username }}">Delete</a>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-        @else
-            <p class="text-sm px-5">No Contacts</p>
-        @endif
+            @if($contacts->isNotEmpty())
+            <table class="min-w-1/2 text-start text-sm font-light text-surface dark:text-white">
+                <thead
+                    class="border-b border-neutral-200 font-medium dark:border-white/10">
+                    <tr>
+                    <th scope="col" class="px-6 py-2">ID</th>
+                    <th scope="col" class="px-6 py-2">Phone</th>
+                    <th scope="col" class="px-6 py-2">Status</th>
+                    <th scope="col" class="px-6 py-2">Last Updated</th>
+                    <th scope="col" class="px-6 py-2">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($contacts as $contact)
+                    <tr class="border-b border-neutral-200 dark:border-white/10 text-center">
+                        <td class="whitespace-nowrap px-6 py-2 font-medium">{{ $contact->id }}</td>
+                        <td class="whitespace-nowrap px-6 py-2">{{ $contact->phone }}</td>
+                        <td class="whitespace-nowrap px-6 py-2">
+                            <span class="text-gray-600 text-sm font-medium">
+                            {{ $contact->is_primary ? 'Primary' : '' }}
+                            </span>
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-2">{{ $contact->created_at->format('d M Y H:i A') }}</td>
+                        <td class="flex justify-between p-2">
+                            <a href="/contact/{{ $contact->id }}/edit">Edit</a>
+                            <a href="/contact/{{ $contact->id }}/delete">Delete</a>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            @else
+                <p class="text-sm px-5">No Contacts</p>
+            @endif
+        </div>
 
-
-        <h2 class="text-xl my-2">Projects</h2>
-        @php
-            $contacts = $user->relation('contact')->get();
-        @endphp
-        @if($contacts->isNotEmpty())
-        <table class="min-w-1/2 text-start text-sm font-light text-surface dark:text-white">
-            <thead
-                class="border-b border-neutral-200 font-medium dark:border-white/10">
-                <tr>
-                <th scope="col" class="px-6 py-2">ID</th>
-                <th scope="col" class="px-6 py-2">Phone</th>
-                <th scope="col" class="px-6 py-2">Status</th>
-                <th scope="col" class="px-6 py-2">Last Updated</th>
-                <th scope="col" class="px-6 py-2">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php
-                    $contacts = $user->relation('contact')->get();
-                @endphp
-
-                @foreach ($contacts as $contact)
-                <tr class="border-b border-neutral-200 dark:border-white/10 text-center">
-                    <td class="whitespace-nowrap px-6 py-2 font-medium">{{ $contact->id }}</td>
-                    <td class="whitespace-nowrap px-6 py-2">{{ $contact->phone }}</td>
-                    <td class="whitespace-nowrap px-6 py-2">
-                        <span class="text-gray-600 text-sm font-medium">
-                        {{ $contact->is_primary ? 'Primary' : '' }}
-                        </span>
-                    </td>
-                    <td class="whitespace-nowrap px-6 py-2">{{ $user->created_at->format('d M Y H:i A') }}</td>
-                    <td>
-                        <a href="/admin/user/{{ $user->username }}">Edit</a>
-                        <a href="/admin/user/{{ $user->username }}">Delete</a>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-        @else
-            <p class="text-sm px-5">No Projects</p>
-        @endif
+        <br class="my-4">
+        <div class="w-1/2">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl my-2">Projects</h2>
+                @if(auth()->check() && $user->id === auth()->user()->id)
+                <a href="/project/create" class="text-gray-600 hover:bg-gray-500 hover:text-white rounded-md px-3 py-1 text-sm font-medium">Add Project</a>
+                @endif
+            </div>
+            @php
+                $projects = $user->relation('project')->get();
+            @endphp
+            @if($projects->isNotEmpty())
+            <table class="min-w-1/2 text-start text-sm font-light text-surface dark:text-white">
+                <thead
+                    class="border-b border-neutral-200 font-medium dark:border-white/10">
+                    <tr>
+                    <th scope="col" class="px-6 py-2">ID</th>
+                    <th scope="col" class="px-6 py-2">Name</th>
+                    <th scope="col" class="px-6 py-2">Tasks</th>
+                    <th scope="col" class="px-6 py-2">Assigned To</th>
+                    <th scope="col" class="px-6 py-2">Last Updated</th>
+                    <th scope="col" class="px-6 py-2">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($projects as $project)
+                    <tr class="border-b border-neutral-200 dark:border-white/10 text-center">
+                        <td class="whitespace-nowrap px-6 py-2 font-medium">{{ $project->id }}</td>
+                        <td class="whitespace-nowrap px-6 py-2">{{ $project->name }}</td>
+                        <td class="whitespace-nowrap px-6 py-2">
+                            {{ $project->relation('task')->count() }} (<a class="text-xs text-blue-700 hover:underline" href="/project/{{ $project->id }}/tasks">View</a>)
+                        </td>
+                        <td class="whitespace-nowrap px-6 py-2">{{ $project->assigned_to()->name }}</td>
+                        <td class="whitespace-nowrap px-6 py-2">{{ $project->created_at->format('d M Y H:i A') }}</td>
+                        <td class="flex justify-between p-2">
+                            <a class="text-sm text-yellow-700 hover:underline" href="/project/{{ $project->id }}/edit">Edit</a>
+                            <a class="text-sm text-red-700 hover:underline" href="/project/{{ $project->id }}/delete">Delete</a>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            @else
+                <p class="text-sm px-5">No Projects</p>
+            @endif
+        </div>
+        </div>
 
 
         <h2 class="text-xl my-10">Blogs</h2>

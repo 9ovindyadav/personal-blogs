@@ -28,4 +28,14 @@ trait DynamicRelationship
 
         return $this->belongsToMany("App\Models\\".ucfirst($child), "{$parent}_{$child}");
     }
+
+    public function assigned_to()
+    {
+        return $this->belongsTo("App\\Models\\User", "assigned_to","id")->first();
+    }
+
+    public function created_by()
+    {
+        return $this->belongsTo("App\\Models\\User", "created_by", "id")->first();
+    }
 }

@@ -16,6 +16,7 @@
                         @endImpersonating
 
                         <x-nav-link href="/profile/{{ auth()->user()->username }}" :active="request()->is('profile')">Welcome, {{ auth()->user()->name }}</x-nav-link>
+                        <x-nav-link href="/tasks" :active="request()->is('tasks')">Tasks</x-nav-link>
                         @if (auth()->user()->is_admin)
                         <x-nav-link href="/admin" :active="request()->is('admin')">Admin</x-nav-link>
                         @endif

@@ -1,5 +1,5 @@
 @extends('admin.layout')
 
 @section('content')
-    <h1>Settings Page</h1>
+    <h1>Dashboard Page</h1>
 @endsection

@@ -52,7 +52,8 @@ class UserController extends Controller
             ],
             'profession' => 'nullable',
             'about_info' => 'nullable',
-            'profile_img' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048'
+            'profile_img' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
+            'is_admin' => ['int']
         ]);
 
         if(request()->hasFile('profile_img')){

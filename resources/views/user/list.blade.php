@@ -43,9 +43,9 @@
                 <a href="{{ route('impersonate', $user->id) }}" class="text-gray-600 hover:bg-gray-500 hover:text-white rounded-md px-3 py-1 text-sm font-medium">Impersonate</a>
                 @endCanBeImpersonated
             </td>
-            <td>
-                <a href="/admin/user/{{ $user->username }}">View</a>
-                <a href="/admin/user/{{ $user->username }}/edit">Edit</a>
+            <td class="flex justify-between p-2">
+                <a class="text-sm text-yellow-700 hover:underline" href="/admin/user/{{ $user->username }}">View</a>
+                <a class="text-sm text-red-700 hover:underline" href="/admin/user/{{ $user->username }}/edit">Edit</a>
             </td>
         </tr>
         @endforeach

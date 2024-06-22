@@ -16,12 +16,12 @@ class ProfileController extends Controller
             $query->orderBy('published_at','desc');
         }]);
        
-        return view('user.profile',['user' => $user]);
+        return view('user.view',['user' => $user]);
     }
 
     public function edit(User $user)
     {
-        return view('user.form',['user' => $user, 'formTitle' => 'Update Profile']);
+        return view('user.profile-edit',['user' => $user, 'formTitle' => 'Update Profile']);
     }
 
     public function update()
@@ -51,5 +51,10 @@ class ProfileController extends Controller
         $user->update($attributes);
 
         return redirect("/profile/{$user->username}")->with('success','Profile updated successfully');
+    }
+
+    public function projects(User $user)
+    {
+        return $user->relation('project')->get();
     }
 }

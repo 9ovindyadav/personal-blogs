@@ -1,4 +1,4 @@
-<x-layout title="{{ isset($user) ? 'Edit: '.$user->name : 'Create New User' }}">
+<x-layout title="{{ isset($user) ? 'Edit Profile: '.$user->name : 'Create New User' }}">
 <div class="flex min-h-full flex-col justify-center p-2 lg:px-8">
   <div class="sm:mx-auto sm:w-full sm:max-w-sm">
     <!-- <img class="mx-auto h-10 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="Your Company"> -->
@@ -6,11 +6,9 @@
   </div>
 
   <div class="mt-5 sm:mx-auto sm:w-full sm:max-w-sm">
-    <form class="space-y-3" action="/admin/user/{{ isset($user) ? 'update' : 'store' }}" method="POST" enctype="multipart/form-data">
+    <form class="space-y-3" action="/profile/{{ isset($user) ? 'update' : 'store' }}" method="POST" enctype="multipart/form-data">
         @csrf
-        @if(isset($user))
-            <input type="hidden" name="user_id" value="{{ $user->id }}">
-        @endif
+     
         @include('components.form.text',
                 [
                     'label' => 'Full Name',
@@ -58,19 +56,6 @@
                 ]
         )
 
-
-        @include('components.form.select',
-                [
-                    'label' => 'Role',
-                    'name' => 'is_admin',
-                    'value' => [0 => 'User',1 => 'Admin'],
-                    'selected' => $user->is_admin ?? null,
-                    'attributes' => [
-                                        'id' => 'is_admin'
-                                    ]
-                ]
-        )
-
         @include('components.form.textarea',
                 [
                     'label' => 'Bio',
@@ -93,7 +78,7 @@
         )
 
         <div class="flex justify-around">
-            <a href="/admin/users" class="flex w-[30%] justify-center rounded-md bg-gray-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+            <a href="/profile/{{ $user->username }}" class="flex w-[30%] justify-center rounded-md bg-gray-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                 Cancel
             </a>
             <button type="submit" class="flex w-[30%] justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
