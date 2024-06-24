@@ -9,6 +9,14 @@ use App\Models\User;
 
 class ContactController extends Controller
 {
+    public function index()
+    {
+        $user = auth()->user();
+        $contacts = $user->relation('contact','M:M')->get();
+
+        return view('contact.user-contact',['contacts' => $contacts, 'pageTitle' => 'All Contacts']);
+    }
+    
     public function create()
     {
         return view('contact.form',['formTitle' => 'Add New Contact']);
@@ -24,7 +32,7 @@ class ContactController extends Controller
 
         $user->relation('contact','M:M')->create(['phone' => $attributes['phone']]);
 
-        return redirect("/profile/{$user->username}")->with('status',"{$attributes['phone']} contact created successfully");
+        return redirect("/contacts")->with('status',"{$attributes['phone']} contact created successfully");
     }
 
     public function edit(Contact $contact)
@@ -48,7 +56,7 @@ class ContactController extends Controller
 
         $contact->update(['phone' => $attributes['phone']]);
         $user = auth()->user();
-        return redirect("/profile/{$user->username}")->with('status',"{$attributes['phone']} contact updated successfully");
+        return redirect("/contacts")->with('status',"{$attributes['phone']} contact updated successfully");
     }
 
     public function delete(Contact $contact)
@@ -58,6 +66,6 @@ class ContactController extends Controller
         $user->relation('contact','M:M')->detach($contact);
         $contact->delete();
 
-        return redirect("/profile/{$user->username}")->with('status',"{$contact->phone} contact deleted successfully");
+        return redirect("/contacts")->with('status',"{$contact->phone} contact deleted successfully");
     }
 }

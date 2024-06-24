@@ -6,7 +6,7 @@
   </div>
 
   <div class="mt-5 sm:mx-auto sm:w-full sm:max-w-sm">
-    <form class="space-y-3" action="/task/{{ isset($project) ? 'update' : 'store' }}" method="POST" enctype="multipart/form-data">
+    <form class="space-y-3" action="/task/{{ isset($task) ? 'update' : 'store' }}" method="POST" enctype="multipart/form-data">
         @csrf
         @if(isset($task))
             <input type="hidden" name="task_id" value="{{ $task->id }}">
@@ -40,7 +40,7 @@
                 [
                     'label' => 'Project',
                     'name' => 'project_id',
-                    'value' => [],
+                    'value' => isset($task) ? [$task->relation('project','M:M',true)->first()->id => $task->relation('project','M:M',true)->first()->name ] : [],
                     'selected' => $task->project_id ?? null,
                     'attributes' => [
                                         'id' => 'user_projects'

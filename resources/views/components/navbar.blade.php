@@ -11,16 +11,19 @@
             <div class="hidden md:block">
                 <div class="ml-4 flex items-center md:ml-6 space-x-4">
                     @auth
-                        @impersonating($guard = null)
-                            <x-nav-link href="{{ route('impersonate.leave') }}">Leave impersonation</x-nav-link>
-                        @endImpersonating
-
-                        <x-nav-link href="/profile/{{ auth()->user()->username }}" :active="request()->is('profile')">Welcome, {{ auth()->user()->name }}</x-nav-link>
-                        <x-nav-link href="/tasks" :active="request()->is('tasks')">Tasks</x-nav-link>
                         @if (auth()->user()->is_admin)
                         <x-nav-link href="/admin" :active="request()->is('admin')">Admin</x-nav-link>
                         @endif
+  
+                        <x-nav-link href="/profile/{{ auth()->user()->username }}" :active="request()->is('profile')">Welcome, {{ auth()->user()->name }}</x-nav-link>
+                        <x-nav-link href="/projects" :active="request()->is('projects')">Projects</x-nav-link>
+                        <x-nav-link href="/tasks" :active="request()->is('tasks')">Tasks</x-nav-link>
+                        <x-nav-link href="/contacts" :active="request()->is('contacts')">Contacts</x-nav-link>
+                        @impersonating($guard = null)
+                            <x-nav-link href="{{ route('impersonate.leave') }}">Leave impersonation</x-nav-link>
+                        @else
                         <x-nav-link href="/logout">Logout</x-nav-link>
+                        @endImpersonating
                     @else
                         <x-nav-link href="/login" :active="request()->is('login')">Login</x-nav-link>
                         <x-nav-link href="/signup" :active="request()->is('signup')">Sign Up</x-nav-link>

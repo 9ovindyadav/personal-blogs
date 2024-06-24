@@ -24,7 +24,7 @@
             <td class="whitespace-nowrap px-6 py-2 font-medium">{{ $task->id }}</td>
             <td class="whitespace-nowrap px-6 py-2">{{ $task->subject }}</td>
             <td class="whitespace-nowrap px-6 py-2"></td>
-            <td class="whitespace-nowrap px-6 py-2">{{ $task->relation('project','M:M',true)->first()->name }}</td>
+            <td class="whitespace-nowrap px-6 py-2">{{ $task->relation('project','M:M',true)->first()->name ?? '' }}</td>
             <td class="whitespace-nowrap px-6 py-2">{{ $task->assigned_to()->name }}</td>
             <td class="whitespace-nowrap px-6 py-2">{{ $task->created_by()->name }}</td>
             <td class="whitespace-nowrap px-6 py-2">{{ $task->created_at->format('d M Y H:i A') }}</td>

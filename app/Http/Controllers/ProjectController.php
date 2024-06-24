@@ -9,6 +9,14 @@ use App\Models\User;
 
 class ProjectController extends Controller
 {
+    public function index()
+    {
+        $user = auth()->user();
+        $projects = $user->relation('project','M:M')->get();
+
+        return view('project.user-project',['projects' => $projects, 'pageTitle' => 'All Projects']);
+    }
+
     public function create()
     {
         $users = User::select('id','name')->get()->pluck('name','id')->toArray();
@@ -68,5 +76,12 @@ class ProjectController extends Controller
         $project->delete();
 
         return redirect("/profile/{$user->username}")->with('status',"{$project->name} project deleted successfully");
+    }
+
+    public function tasks(Project $project)
+    {
+        $tasks = $project->relation('task','M:M')->get();
+
+        return view('task.user-task',['tasks' => $tasks, 'pageTitle' => $project->name.' Tasks  ']);
     }
 }

@@ -42,18 +42,21 @@ Route::middleware('auth')->group(function (){
     Route::get('profile/{user:username}/edit', [ProfileController::class,'edit']);
     Route::post('profile/update', [ProfileController::class,'update']);
 
+    Route::get('/contacts',[ContactController::class,'index']);
     Route::get('/contact/create',[ContactController::class,'create']);
     Route::post('/contact/store',[ContactController::class,'store']);
     Route::get('/contact/{contact:id}/edit',[ContactController::class,'edit']);
     Route::post('/contact/update',[ContactController::class,'update']);
     Route::get('/contact/{contact:id}/delete',[ContactController::class,'delete']);
 
+    Route::get('/projects',[ProjectController::class,'index']);
     Route::get('/project/create',[ProjectController::class,'create']);
     Route::post('/project/store',[ProjectController::class,'store']);
     Route::get('/project/{project:id}/edit',[ProjectController::class,'edit']);
     Route::post('/project/update',[ProjectController::class,'update']);
-    Route::get('/project/{contact:id}/delete',[ProjectController::class,'delete']);
+    Route::get('/project/{project:id}/delete',[ProjectController::class,'delete']);
 
+    Route::get('/project/{project:id}/tasks',[ProjectController::class,'tasks']);
     Route::post('/user/{user:id}/projects',[ProfileController::class,'projects']);
 
     Route::get('/tasks',[TaskController::class,'index']);
