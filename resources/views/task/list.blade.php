@@ -11,11 +11,11 @@
         <tr>
             <th scope="col" class="px-6 py-2">ID</th>
             <th scope="col" class="px-6 py-2">Subject</th>
+            <th scope="col" class="px-6 py-2">Status</th>
             <th scope="col" class="px-6 py-2">Project</th>
             <th scope="col" class="px-6 py-2">Assigned To</th>
             <th scope="col" class="px-6 py-2">Created By</th>
             <th scope="col" class="px-6 py-2">Last Updated</th>
-            <th scope="col" class="px-6 py-2">Action</th>
         </tr>
     </thead>
     <tbody>
@@ -24,13 +24,10 @@
             <td class="whitespace-nowrap px-6 py-2 font-medium">{{ $task->id }}</td>
             <td class="whitespace-nowrap px-6 py-2">{{ $task->subject }}</td>
             <td class="whitespace-nowrap px-6 py-2"></td>
+            <td class="whitespace-nowrap px-6 py-2">{{ $task->relation('project','M:M',true)->first()->name }}</td>
             <td class="whitespace-nowrap px-6 py-2">{{ $task->assigned_to()->name }}</td>
             <td class="whitespace-nowrap px-6 py-2">{{ $task->created_by()->name }}</td>
             <td class="whitespace-nowrap px-6 py-2">{{ $task->created_at->format('d M Y H:i A') }}</td>
-            <td class="flex justify-between p-2">
-                <a class="text-sm text-yellow-700 hover:underline" href="/project/{{ $project->id }}/edit">Edit</a>
-                <a class="text-sm text-red-700 hover:underline" href="/project/{{ $project->id }}/delete">Delete</a>
-            </td>
         </tr>
         @endforeach
     </tbody>

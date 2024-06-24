@@ -38,7 +38,7 @@
                 @endif
             </div>
             @php
-                $contacts = $user->relation('contact')->get();
+                $contacts = $user->relation('contact','M:M')->get();
             @endphp
 
             @if($contacts->isNotEmpty())
@@ -86,7 +86,7 @@
                 @endif
             </div>
             @php
-                $projects = $user->relation('project')->get();
+                $projects = $user->relation('project','M:M')->get();
             @endphp
             @if($projects->isNotEmpty())
             <table class="min-w-1/2 text-start text-sm font-light text-surface dark:text-white">
@@ -107,7 +107,7 @@
                         <td class="whitespace-nowrap px-6 py-2 font-medium">{{ $project->id }}</td>
                         <td class="whitespace-nowrap px-6 py-2">{{ $project->name }}</td>
                         <td class="whitespace-nowrap px-6 py-2">
-                            {{ $project->relation('task')->count() }} (<a class="text-xs text-blue-700 hover:underline" href="/project/{{ $project->id }}/tasks">View</a>)
+                            {{ $project->relation('task','M:M')->count() }} (<a class="text-xs text-blue-700 hover:underline" href="/project/{{ $project->id }}/tasks">View</a>)
                         </td>
                         <td class="whitespace-nowrap px-6 py-2">{{ $project->assigned_to()->name }}</td>
                         <td class="whitespace-nowrap px-6 py-2">{{ $project->created_at->format('d M Y H:i A') }}</td>

@@ -22,7 +22,7 @@ class ContactController extends Controller
         
         $user = auth()->user();
 
-        $user->relation('contact')->create(['phone' => $attributes['phone']]);
+        $user->relation('contact','M:M')->create(['phone' => $attributes['phone']]);
 
         return redirect("/profile/{$user->username}")->with('status',"{$attributes['phone']} contact created successfully");
     }
@@ -55,7 +55,7 @@ class ContactController extends Controller
     {
         $user = auth()->user();
 
-        $user->relation('contact')->detach($contact);
+        $user->relation('contact','M:M')->detach($contact);
         $contact->delete();
 
         return redirect("/profile/{$user->username}")->with('status',"{$contact->phone} contact deleted successfully");

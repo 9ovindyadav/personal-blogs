@@ -36,7 +36,7 @@
             @endif
         </div>
         @php
-            $contacts = $user->relation('contact')->get();
+            $contacts = $user->relation('contact','M:M')->get();
         @endphp
 
         @if($contacts->isNotEmpty())
@@ -82,7 +82,7 @@
             @endif
         </div>
         @php
-            $contacts = $user->relation('contact')->get();
+            $contacts = $user->relation('contact','M:M')->get();
         @endphp
         @if($contacts->isNotEmpty())
         <table class="min-w-1/2 text-start text-sm font-light text-surface dark:text-white">
@@ -98,7 +98,7 @@
             </thead>
             <tbody>
                 @php
-                    $contacts = $user->relation('contact')->get();
+                    $contacts = $user->relation('contact','M:M')->get();
                 @endphp
 
                 @foreach ($contacts as $contact)

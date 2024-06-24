@@ -21,7 +21,7 @@ class TaskController extends Controller
     public function create()
     {
         $users = User::select('id','name')->get()->pluck('name','id')->toArray();
-        
+        $users = array_merge([0 => ''], $users);
         return view('task.form',['formTitle' => 'Add New Task', 'users' => $users]);
     }
 
@@ -37,7 +37,7 @@ class TaskController extends Controller
 
         if(request()->input('project_id')){
             $project = Project::find(request()->input('project_id'));
-            $project->relation('task')->create($attributes);
+            $project->relation('task','M:M')->create($attributes);
         }else{
             Task::create($attributes);
         }  

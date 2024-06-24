@@ -25,7 +25,7 @@ class ProjectController extends Controller
         
         $user = auth()->user();
 
-        $user->relation('project')->create(['created_by' => $user->id, ...$attributes]);
+        $user->relation('project','M:M')->create(['created_by' => $user->id, ...$attributes]);
 
         return redirect("/profile/{$user->username}")->with('status',"{$attributes['name']} project created successfully");
     }
@@ -64,7 +64,7 @@ class ProjectController extends Controller
     {
         $user = auth()->user();
 
-        $user->relation('project')->detach($project);
+        $user->relation('project','M:M')->detach($project);
         $project->delete();
 
         return redirect("/profile/{$user->username}")->with('status',"{$project->name} project deleted successfully");

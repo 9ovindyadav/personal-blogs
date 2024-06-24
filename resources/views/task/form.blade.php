@@ -74,9 +74,13 @@
         res = await res.json();
         console.log(res);
         const userProjectsInput = document.getElementById('user_projects');
-        userProjectsInput.innerHTML = res.map((project) =>{
-            return `<option value="${project.id}">${project.name}</option>`;
-        })
+        if(res){
+            userProjectsInput.innerHTML = res.map((project) =>{
+                return `<option value="${project.id}">${project.name}</option>`;
+            })
+        }else{
+            userProjectsInput.innerHTML = '';
+        }
     }
 </script>
 </x-layout>

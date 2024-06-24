@@ -10,23 +10,37 @@ use App\Models\Relationship;
 
 trait DynamicRelationship
 {
-    public function relation($child)
+    public function relation($class, $type, $isParent = false)
     {
+  
         $parent = explode('\\',self::class);
         $parent = strtolower(array_pop($parent));
-
-        $relation = Relationship::where([['parent','=', $parent],['child','=', $child]])->first();
-        $pivotTable = $relation->pivot_table;
-        if(!Schema::hasTable($pivotTable)){
-            Schema::create($pivotTable, function(Blueprint $table) use($parent, $child){
-                $table->id();
-                $table->string($parent.'_id');
-                $table->string($child.'_id');
-                $table->timestamps();
-            });
+        $child = $class;
+        if($isParent){
+            $child = $parent;
+            $parent = $class;
         }
+        
+        $relation = Relationship::where([['parent','=', $parent],['child','=', $child]])->first();
 
-        return $this->belongsToMany("App\Models\\".ucfirst($child), "{$parent}_{$child}");
+        switch($type){
+            case '1:1':
+                return $this->hasOne("App\Models\\".ucfirst($class));
+            case '1:M':
+                return;
+            case 'M:M':
+                $pivotTable = $relation->pivot_table;
+                if(!Schema::hasTable($pivotTable)){
+                    Schema::create($pivotTable, function(Blueprint $table) use($parent, $child){
+                        $table->id();
+                        $table->string($parent.'_id');
+                        $table->string($child.'_id');
+                        $table->timestamps();
+                    });
+                }
+
+                return $this->belongsToMany("App\Models\\".ucfirst($class), "{$parent}_{$child}");
+        }
     }
 
     public function assigned_to()

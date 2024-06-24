@@ -55,6 +55,6 @@ class ProfileController extends Controller
 
     public function projects(User $user)
     {
-        return $user->relation('project')->get();
+        return $user->relation('project','M:M')->get();
     }
 }
