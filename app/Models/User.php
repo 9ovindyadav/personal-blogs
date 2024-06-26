@@ -11,7 +11,7 @@ use Lab404\Impersonate\Models\Impersonate;
 
 use App\Traits\DynamicRelationship;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable, Impersonate, DynamicRelationship;
 

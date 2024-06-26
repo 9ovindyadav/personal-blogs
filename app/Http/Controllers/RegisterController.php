@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Auth\Events\Registered;
 
 use App\Models\User;
+use App\Mail\Signup as SignupMail;
 
 class RegisterController extends Controller
 {
@@ -26,6 +29,8 @@ class RegisterController extends Controller
 
         auth()->login($user);
 
-        return redirect('/')->with('success','Your account has been created successfully!');
+        event(new Registered($user));
+        
+        return redirect('/email/verify')->with('success','Your account has been created successfully!');
     }
 }

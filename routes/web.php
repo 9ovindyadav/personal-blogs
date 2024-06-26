@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\RegisterController;
@@ -8,24 +9,16 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\EmailVerifyController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 
 use App\Models\Blog;
 use App\Models\User;
 
-Route::get('/', function () {
-    $blogs = Blog::with('category','author')->orderBy('published_at','desc')->cursorPaginate(10);
+Route::impersonate();
 
-    return view('blogs',['blogs' => $blogs]);
-});
-
-Route::get('blog/{blog:slug}', function (Blog $blog) {
-    
-    return view('blog',[
-        'blog' => $blog
-    ]);
-});
+Route::get('profile/{user:username}', [ProfileController::class,'index']);
 
 Route::middleware('guest')->group(function (){
     Route::get('signup', [RegisterController::class,'create']);
@@ -35,10 +28,8 @@ Route::middleware('guest')->group(function (){
     Route::post('login', [SessionController::class,'store']);
 });
 
-Route::get('profile/{user:username}', [ProfileController::class,'index']);
-
-Route::middleware('auth')->group(function (){
-    Route::get('logout', [SessionController::class,'destroy']);
+Route::middleware(['auth','verified'])->group(function (){
+    
     Route::get('profile/{user:username}/edit', [ProfileController::class,'edit']);
     Route::post('profile/update', [ProfileController::class,'update']);
 
@@ -67,7 +58,7 @@ Route::middleware('auth')->group(function (){
     Route::get('/task/{task:id}/delete',[TaskController::class,'delete']);
 });
 
-Route::middleware(['auth','admin'])->prefix('admin')->group(function (){
+Route::middleware(['auth','verified','admin'])->prefix('admin')->group(function (){
     Route::get('', [AdminController::class,'index']);
     Route::get('/users', [AdminUserController::class,'index']);
     Route::get('/user/{user:username}', [AdminUserController::class,'view']);
@@ -82,4 +73,33 @@ Route::middleware(['auth','admin'])->prefix('admin')->group(function (){
     Route::get('/settings', [AdminController::class,'settings']);
 });
 
-Route::impersonate();
+Route::middleware('auth')->group(function(){
+    Route::get('logout', [SessionController::class,'destroy'])->middleware('auth');
+
+    Route::get('/email/verify',[EmailVerifyController::class,'index'])
+        ->name('verification.notice');
+        
+    Route::post('/email/verification-notification',[EmailVerifyController::class,'notify'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
+
+    Route::get('/email/verify/{id}/{hash}',[EmailVerifyController::class,'verify'])
+        ->middleware('signed')
+        ->name('verification.verify');   
+});
+
+
+Route::get('/', function (Request $request) {
+
+    $blogs = Blog::with('category','author')->orderBy('published_at','desc')->cursorPaginate(10);
+    
+    return view('blogs',['blogs' => $blogs]);
+});
+
+Route::get('blog/{blog:slug}', function (Blog $blog) {
+    
+    return $blog->relation('user','1:M',true)->get();
+    return view('blog',[
+        'blog' => $blog
+    ]);
+});

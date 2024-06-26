@@ -21,13 +21,42 @@ trait DynamicRelationship
             $parent = $class;
         }
         
-        $relation = Relationship::where([['parent','=', $parent],['child','=', $child]])->first();
+        $relation = Relationship::where([
+                                            ['parent','=', $parent],
+                                            ['child','=', $child],
+                                            // ['type','=', $type]
+                                        ])->first();
+        if(!$relation){
+            throw new \Exception("Relation between model {$parent} and {$child} type {$type} not found");
+        }
 
         switch($type){
             case '1:1':
-                return $this->hasOne("App\Models\\".ucfirst($class));
+                if(!Schema::hasColumn("{$child}s","{$parent}_id")){
+                    Schema::table("{$child}s", function(Blueprint $table){
+                        $table->foreignId("{$parent}_id");
+                    });
+                }
+
+                if($isParent){
+                    return $this->belongsTo("App\\Models\\".ucfirst($class));
+                }else{
+                    return $this->hasOne("App\\Models\\".ucfirst($class));
+                }
+
             case '1:M':
-                return;
+                if(!Schema::hasColumn("{$child}s","{$parent}_id")){
+                    Schema::table("{$child}s", function(Blueprint $table){
+                        $table->foreignId("{$parent}_id");
+                    });
+                }
+                
+                if($isParent){
+                    return $this->belongsTo("App\\Models\\".ucfirst($class));
+                }else{
+                    return $this->hasMany("App\\Models\\".ucfirst($class));
+                }
+
             case 'M:M':
                 $pivotTable = $relation->pivot_table;
                 if(!Schema::hasTable($pivotTable)){
@@ -39,7 +68,7 @@ trait DynamicRelationship
                     });
                 }
 
-                return $this->belongsToMany("App\Models\\".ucfirst($class), "{$parent}_{$child}");
+                return $this->belongsToMany("App\\Models\\".ucfirst($class), "{$parent}_{$child}");
         }
     }
 
