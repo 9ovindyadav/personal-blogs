@@ -7,6 +7,11 @@ use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
 
+use App\Models\User;
+use App\Models\Contact;
+use App\Observers\UserObserver;
+use App\Observers\ContactObserver;
+
 class EventServiceProvider extends ServiceProvider
 {
     /**
@@ -27,6 +32,7 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        User::observe(UserObserver::class);
+        Contact::observe(ContactObserver::class);
     }
 }

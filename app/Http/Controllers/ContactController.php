@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 use App\Models\Contact;
 use App\Models\User;
@@ -12,6 +13,7 @@ class ContactController extends Controller
     public function index()
     {
         $user = auth()->user();
+        // dd($user);
         $contacts = $user->relation('contact','M:M')->get();
 
         return view('contact.user-contact',['contacts' => $contacts, 'pageTitle' => 'All Contacts']);
@@ -30,7 +32,7 @@ class ContactController extends Controller
         
         $user = auth()->user();
 
-        $user->relation('contact','M:M')->create(['phone' => $attributes['phone']]);
+        $user->relation('contact','M:M')->create(['phone' => $attributes['phone'],'created_at' => now()]);
 
         return redirect("/contacts")->with('status',"{$attributes['phone']} contact created successfully");
     }

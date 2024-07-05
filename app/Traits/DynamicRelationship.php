@@ -10,7 +10,7 @@ use App\Models\Relationship;
 
 trait DynamicRelationship
 {
-    public function relation($class, $type, $isParent = false)
+    public function relation($class, $type, $isParent = false, $options = [])
     {
   
         $parent = explode('\\',self::class);
@@ -38,10 +38,12 @@ trait DynamicRelationship
                     });
                 }
 
+                $foreignKey = $options['foreign_key'] ?? "{$class}_id";
+
                 if($isParent){
-                    return $this->belongsTo("App\\Models\\".ucfirst($class));
+                    return $this->belongsTo("App\\Models\\".ucfirst($class), $foreignKey);
                 }else{
-                    return $this->hasOne("App\\Models\\".ucfirst($class));
+                    return $this->hasOne("App\\Models\\".ucfirst($class), $foreignKey);
                 }
 
             case '1:M':

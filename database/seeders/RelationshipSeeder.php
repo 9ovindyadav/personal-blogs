@@ -28,6 +28,12 @@ class RelationshipSeeder extends Seeder
                 'pivot_table' => 'user_project'
             ],
             [
+                'parent' => 'user',
+                'child' => 'message',
+                'type' => '1:1',
+                'pivot_table' => ''
+            ],
+            [
                 'parent' => 'project',
                 'child' => 'task',
                 'type' => '1:M',

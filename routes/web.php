@@ -9,6 +9,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\EmailVerifyController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
@@ -56,6 +57,10 @@ Route::middleware(['auth','verified'])->group(function (){
     Route::get('/task/{task:id}/edit',[TaskController::class,'edit']);
     Route::post('/task/update',[TaskController::class,'update']);
     Route::get('/task/{task:id}/delete',[TaskController::class,'delete']);
+
+    Route::get('/chats',[ChatController::class,'index']);
+    Route::post('/message/send',[ChatController::class,'messageSend']);
+    Route::post('/messages',[ChatController::class,'getMessages']); 
 });
 
 Route::middleware(['auth','verified','admin'])->prefix('admin')->group(function (){
@@ -97,8 +102,7 @@ Route::get('/', function (Request $request) {
 });
 
 Route::get('blog/{blog:slug}', function (Blog $blog) {
-    
-    return $blog->relation('user','1:M',true)->get();
+
     return view('blog',[
         'blog' => $blog
     ]);

@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/x-icon" href="{{ asset('images/logo.png') }}">
     <title>{{ $title }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -56,14 +57,15 @@
         }
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <script src="{{ asset('js/app.js') }}"></script>
 </head>
 <body>
     <x-navbar></x-navbar>
 
-    <main class="mt-20">
+    <main class="">
         {{ $slot }}
     </main>
-
     <x-flash></x-flash>
 </body>
 </html>

@@ -1,7 +1,7 @@
 <x-layout title="Profile: {{ $user->name }}">
     <div class="p-5 rounded flex flex-col items-center text-gray-500">
         <div class="flex items-center">
-            <img class="w-16 h-16 rounded-full mr-3" src="{{ $user->profile_img ? asset($user->profile_img) : asset('images/user-icon.jpeg') }}" alt="Profile Image">
+            <img class="w-16 h-16 rounded-full mr-3" src="{{ asset($user->profile_img) }}" alt="Profile Image">
             <div>
                 <h2
                     class="text-2xl font-medium leading-none text-gray-900 hover:text-indigo-600 transition duration-500 ease-in-out">
