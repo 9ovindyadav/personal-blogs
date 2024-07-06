@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 use App\Jobs\ProcessEmails;
 use App\Mail\Signup as SignupMail;
+use App\Models\User;
 
 class EmailVerifyController extends Controller
 {

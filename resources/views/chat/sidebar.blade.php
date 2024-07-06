@@ -58,7 +58,7 @@
                     class="flex flex-row items-center hover:bg-gray-100 rounded-xl p-2">
 
                     <div class="flex items-center justify-center h-8 w-8 bg-indigo-200 rounded-full">
-                    H
+                    {{ $friend->name[0] }}
                     </div>
                     <div class="flex justify-between items-center w-full" 
                         data-new-message-count="0"

@@ -89,9 +89,10 @@ Route::middleware('auth')->group(function(){
         ->name('verification.send');
 
     Route::get('/email/verify/{id}/{hash}',[EmailVerifyController::class,'verify'])
-        ->middleware('signed')
+        ->middleware('signed','throttle:6,1')
         ->name('verification.verify');   
 });
+
 
 
 Route::get('/', function (Request $request) {

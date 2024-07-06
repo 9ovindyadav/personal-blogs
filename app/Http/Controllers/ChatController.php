@@ -15,12 +15,12 @@ class ChatController extends Controller
     {
         $user = auth()->user();
         $newGroup = new User();
-        $newGroup->name = 'Group A';
+        $newGroup->name = 'Developers Group';
         $newGroup->id = '10';
         $newGroup->type = 'group';
 
         $friends = User::where('id','!=', $user->id)->get();
-        $friends->push($newGroup);
+        $friends->prepend($newGroup);
         return view('chat.index',['user' => $user,'friends' => $friends]);
     }
 
