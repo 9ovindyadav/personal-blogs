@@ -18,12 +18,12 @@ class UserSeeder extends Seeder
         User::factory()->create([
             'name' => 'Govind Yadav',
             'username' => '9ovindyadav',
-            'email' => 'govindsvyadav@gmail.com',
+            'email' => 'govind@gmail.com',
             'password' => 'asdfghjkl',
             'profession' => 'Software Developer',
             'is_admin' => true
         ]);
 
-        // User::factory()->count(4)->create();
+        User::factory()->count(3)->create();
     }
 }

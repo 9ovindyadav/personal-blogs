@@ -1,6 +1,6 @@
 <x-layout title="Chats">
 
-<div class="flex h-screen antialiased text-gray-800">
+<div class="flex antialiased text-gray-800" style="height: 90vh">
     <div class="flex flex-row h-full w-full overflow-x-hidden">
       @include('chat.sidebar',['user' => $user, 'friends' => $friends])
 

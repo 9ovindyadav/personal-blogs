@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use ElephantIO\Client as WebSocketClient;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
 
 use App\Events\MessageReceived;
 use App\Models\Message;
@@ -13,6 +15,9 @@ class ChatController extends Controller
 {
     public function index()
     {
+        \Log::info('Testing class autoloading');
+        \Cache::put('testing','Hello Govind');
+        
         $user = auth()->user();
         $newGroup = new User();
         $newGroup->name = 'Developers Group';
