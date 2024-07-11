@@ -16,6 +16,8 @@ class CreateConversationsTable extends Migration
         Schema::create('conversations', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->enum('type',['private','group'])->default('private');
+            $table->string('name')->nullable();
+            $table->string('discription')->nullable();
             $table->timestamps();
         });
     }

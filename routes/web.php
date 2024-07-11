@@ -9,11 +9,12 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
-use App\Http\Controllers\ChatController;
 use App\Http\Controllers\EmailVerifyController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 
+use App\Http\Controllers\Chat\ChatController;
+use App\Http\Controllers\Chat\ConversationController;
 use App\Models\Blog;
 use App\Models\User;
 
@@ -59,8 +60,11 @@ Route::middleware(['auth','verified'])->group(function (){
     Route::get('/task/{task:id}/delete',[TaskController::class,'delete']);
 
     Route::get('/chats',[ChatController::class,'index']);
-    Route::post('/message/send',[ChatController::class,'messageSend']);
+    Route::post('/message/send',[ChatController::class,'sendMessage']);
     Route::post('/messages',[ChatController::class,'getMessages']); 
+
+    Route::get('/conversation/create',[ConversationController::class,'create']);
+    Route::post('/conversation/store',[ConversationController::class,'store']);
 });
 
 Route::middleware(['auth','verified','admin'])->prefix('admin')->group(function (){

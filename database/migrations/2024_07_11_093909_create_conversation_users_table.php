@@ -18,7 +18,8 @@ class CreateConversationUsersTable extends Migration
             $table->uuid('conversation_id');
             $table->foreign('conversation_id')->references('id')->on('conversations')->onDelete('cascade');
             $table->unsignedBigInteger('user_id');
-            $tbale->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->boolean('is_admin')->default(false);
             $table->timestamps();
         });
     }

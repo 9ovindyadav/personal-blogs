@@ -1,43 +1,36 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Chat;
 
 use Illuminate\Http\Request;
 use ElephantIO\Client as WebSocketClient;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
 
+use App\Http\Controllers\Controller;
 use App\Events\MessageReceived;
 use App\Models\Message;
 use App\Models\User;
 
 class ChatController extends Controller
 {
-    public function index()
-    {
-        \Log::info('Testing class autoloading');
-        \Cache::put('testing','Hello Govind');
+    public function index(Request $request)
+    {   
+        $user = $request->user();
+        $conversations = $user->conversations()->get();
         
-        $user = auth()->user();
-        $newGroup = new User();
-        $newGroup->name = 'Developers Group';
-        $newGroup->id = '10';
-        $newGroup->type = 'group';
-
-        $friends = User::where('id','!=', $user->id)->get();
-        $friends->prepend($newGroup);
-        return view('chat.index',['user' => $user,'friends' => $friends]);
+        return view('chat.index',['user' => $user,'conversations' => $conversations]);
     }
 
-    public function messageSend()
+    public function sendMessage()
     {
         $attributes = request()->validate([
-            'event' => ['max:20','required'],
-            'message' => ['max:100','required'],
-            'sender_id' => ['int','required'],
-            'sender_name' => ['string'],
-            'receiver_id' => ['int','required'],
-            'receiver_type' => ['string','required']
+            'content' => ['required','max:100'],
+            'content_type' => ['required','string'],
+            'author_id' => ['int','required'],
+            'author_name' => ['string'],
+            'conversation_id' => ['string','required'],
+            'send_at' => []
         ]);
 
         $options = ['client' => WebSocketClient::CLIENT_4X];
@@ -46,13 +39,13 @@ class ChatController extends Controller
         $client->connect();
         $client->of('/');
         
-        $data = ['event' => $attributes['event'], 'message' => $attributes];
-        $client->emit('client-message', $data);
+        $data = ['channel' => "chat-{$attributes['conversation_id']}", 'message' => $attributes];
+        $client->emit("pblogs-messages", $data);
         
         $client->disconnect();
         // MessageReceived::dispatch($attributes['message'], $attributes['sender_id'], $attributes['receiver_id']);
-        unset($attributes['event'],$attributes['sender_name']);
-        Message::create($attributes);
+        // unset($attributes['event'],$attributes['sender_name']);
+        // Message::create($attributes);
 
         return ['success' => true, 'message' => 'Message sent successfully'];
     }

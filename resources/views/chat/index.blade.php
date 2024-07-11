@@ -2,7 +2,7 @@
 
 <div class="flex antialiased text-gray-800" style="height: 90vh">
     <div class="flex flex-row h-full w-full overflow-x-hidden">
-      @include('chat.sidebar',['user' => $user, 'friends' => $friends])
+      @include('chat.sidebar',['user' => $user, 'conversations' => $conversations])
 
       @include('chat.chat')
     </div>
@@ -18,38 +18,26 @@
         const messageInput = document.getElementById('messageInput');
         const messageSendBtn = document.getElementById('messageSendBtn');
 
-        const senderId = "{{ auth()->user()->id }}";
-        const senderName = "{{ auth()->user()->name }}";
-        let receiverId;
-        let receiverType = 'user';
-        const receiver = {
-            id: '',
-            channel: '',
-            type: 'user'
-        };
-
-        const friends = @json($friends);
+        const currentUser = @json($user);
+        let currentConversation = null;
+        const conversations = @json($conversations);
         
         function setupListeners() {
-            friends.forEach(friend => {
+            conversations.forEach(conversation => {
                 
-                const friendChannel = friend.type && friend.type === 'group' ? `message-from-${friend.id}-to-${senderId}` : `message-for-${friend.id}`;
-
-                socket.on(friendChannel, function(message){
+                socket.on(`chat-${conversation.id}`, function(message){
                     console.log(message);
-                    const friendElement = document.getElementById(`friend-${friend.id}`);
-                       
-                    let newMessageCount = friendElement.dataset.newMessageCount + 1;
-                    friendElement.innerHTML = `
-                    <div class="ml-2 text-sm font-semibold">${friend.name}</div>
-                    <span  class="flex items-center justify-center text-xs bg-red-400 h-4 w-4 rounded-full">${newMessageCount}</span>
-                    `;
+                    if(message.author_id != currentUser.id){
+                        const conversationElement = document.getElementById(`conversation-${conversation.id}`);
+                        conversationElement.textContent = conversationElement.dataset.newMessageCount + 1;
+                        conversationElement.classList.remove('hidden');
+                    }
                 });
             });
         }
         setupListeners();
 
-        function selectFriend(element, friend)
+        function selectConversation(element, conversationId)
         {
             const siblings = element.parentNode.children;
             for (let i = 0; i < siblings.length; i++) {
@@ -58,35 +46,25 @@
 
             element.classList.add('bg-gray-300');
             chatContainer.innerHTML = '';
-            
-            const friendElement = document.getElementById(`friend-${friend.id}`);
-                       
-            friendElement.innerHTML = `
-            <div class="ml-2 text-sm font-semibold">${friend.name}</div>
-            `;
 
-            receiver.id = friend.id;
-            if(friend.type){
-                receiver.type = friend.type;
-            }
-            getMessages(senderId, friend.id, receiver.type);
-
-            receiver.channel = receiver.type === 'user' ? `message-from-${friend.id}-to-${senderId}` : `message-for-${friend.id}`;
+            currentConversation = conversationId;
+            // getMessages(conversationId);
+            const conversationElement = document.getElementById(`conversation-${conversationId}`);
+            conversationElement.dataset.newMessageCount = 0;
+            conversationElement.classList.add('hidden');
             
-            socket.on(receiver.channel, function(message){
+            socket.on(`chat-${conversationId}`, function(message){
                 console.log(message);
-                if(message.sender_id !== senderId){
-                    appendMessage(message.message, true, (new Date()).toISOString(),message.sender_name);
+                if(message.author_id != currentUser.id){
+                    appendMessage(message.content, true, message.send_at, message.author_name);
                 }
             });
         }
 
-        async function getMessages(sender, receiver, receiverType = 'user')
+        async function getMessages(conversationId)
         {
             const formData = new FormData();
-            formData.append('sender_id', sender);
-            formData.append('receiver_id',receiver);
-            formData.append('receiver_type',receiverType);
+            formData.append('conversation_id', conversationId);
 
             let res = await fetch('/messages',{
                 method:'POST',
@@ -104,7 +82,7 @@
                     if(message.sender_id == senderId) {
                         appendMessage(message.message, false, message.created_at);
                     }else{
-                        appendMessage(message.message, true, message.created_at, message.sender_name);
+                        appendMessage(message.message, true, message.created_at, message.author_name);
                     } 
                 });
             }else{
@@ -115,18 +93,17 @@
 
         async function sendMessage() 
         {
-            if(messageInput.value){
+            if(messageInput.value && currentConversation){
                 
                 appendMessage(messageInput.value);
-                console.log(receiverId);
+                
                 const formData = new FormData();
-                formData.append('message',messageInput.value);
-                formData.append('sender_id', senderId);
-                formData.append('sender_name', senderName);
-                formData.append('receiver_id',receiver.id);
-                formData.append('receiver_type',receiver.type);
-                formData.append('event', receiver.type === 'user' ? `message-from-${senderId}-to-${receiver.id}` : `message-for-${receiver.id}`);
-
+                formData.append('content',messageInput.value);
+                formData.append('content_type','text');
+                formData.append('author_id', currentUser.id);
+                formData.append('author_name', currentUser.name);
+                formData.append('conversation_id',currentConversation);
+                formData.append('send_at',(new Date()).toISOString());
                 let res = await fetch('/message/send',{
                     method:'POST',
                     headers: {
@@ -137,6 +114,7 @@
 
                 res = await res.json();
                 messageInput.value = '';
+                console.log(res);
             }
         }
 

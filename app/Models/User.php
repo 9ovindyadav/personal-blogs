@@ -75,4 +75,21 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return Carbon::instance($date)->setTimezone(config('app.timezone'))->toIso8601String();
     }
+
+    public function conversations()
+    {
+        return $this->belongsToMany(Conversation::class,'conversation_users')
+                    ->withPivot('is_admin')
+                    ->withTimestamps();
+    }
+
+    public function adminGroups()
+    {
+        $this->conversations()->wherePivot('is_admin', true);
+    }
+
+    public function messages()
+    {
+        return $this->hasMany(Message::class,'author_id');
+    }
 }
