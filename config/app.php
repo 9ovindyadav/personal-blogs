@@ -165,6 +165,7 @@ return [
         /*
          * Package Service Providers...
          */
+        Jenssegers\Mongodb\MongoDBServiceProvider::class,
         Lab404\Impersonate\ImpersonateServiceProvider::class,
         /*
          * Application Service Providers...

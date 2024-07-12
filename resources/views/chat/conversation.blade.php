@@ -40,6 +40,8 @@
                                         ]
                     ]
             )
+
+            
         </div>
         <div class="flex justify-around">
             <a href="/chats" class="flex w-[30%] justify-center rounded-md bg-gray-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
@@ -92,7 +94,9 @@
                                                         'value' => $users,
                                                         'selected' => $conversation->participants ?? null,
                                                         'attributes' => [
-                                                                            'id' => 'assigned_to'
+                                                                            'id' => 'assigned_to',
+                                                                            'multiple' => true,
+                                                                            'size' => 5
                                                                         ]
                                                     ]
                                             )`;

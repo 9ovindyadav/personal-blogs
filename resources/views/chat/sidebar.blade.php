@@ -28,26 +28,30 @@
         >
         </div>
         <div class="flex flex-col space-y-1 mt-4 -mx-2 h-48 overflow-y-auto">
-            @foreach($conversations as $conversation)
+            @foreach($conversations as $c)
+                @php
+                    $conversation = new StdClass();
+                    $conversation->id = $c->id;
+                    $conversation->name = $c->name;
+
+                    if($c->type === 'private'){
+                        $otherUser = $c->users->reject(function ($otherUser) use ($user) {
+                            return $otherUser->id === $user->id;
+                        })->first();
+                        $conversation->name = $otherUser->name;
+                        $conversation->profile_img = $otherUser->profile_img;
+                    }
+
+                @endphp
                 <button
-                    onclick="selectConversation(this,'{{ $conversation->id }}')"
+                    onclick="selectConversation(this, {{ json_encode($conversation) }} )"
                     class="flex flex-row items-center hover:bg-gray-100 rounded-xl p-2">
-                    @php
-                        $name;
-                        if($conversation->type === 'private'){
-                            $otherUser = $conversation->users->reject(function ($otherUser) use ($user) {
-                                return $otherUser->id === $user->id;
-                            })->first();
-                            $name = $otherUser->name;
-                        }else{
-                            $name = $conversation->name;
-                        }
-                    @endphp
+                    
                     <div class="flex items-center justify-center h-8 w-8 bg-indigo-200 rounded-full">
-                    {{ $name[0] }}
+                    {{ $conversation->name[0] }}
                     </div>
                     <div class="flex justify-between items-center w-full">
-                        <div class="ml-2 text-sm font-semibold">{{ $name }}</div>
+                        <div class="ml-2 text-sm font-semibold">{{ $conversation->name }}</div>
                         <span
                             data-new-message-count="0"
                             id="conversation-{{ $conversation->id }}"  

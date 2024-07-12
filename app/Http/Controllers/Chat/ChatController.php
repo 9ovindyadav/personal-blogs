@@ -43,9 +43,7 @@ class ChatController extends Controller
         $client->emit("pblogs-messages", $data);
         
         $client->disconnect();
-        // MessageReceived::dispatch($attributes['message'], $attributes['sender_id'], $attributes['receiver_id']);
-        // unset($attributes['event'],$attributes['sender_name']);
-        // Message::create($attributes);
+        Message::create($attributes);
 
         return ['success' => true, 'message' => 'Message sent successfully'];
     }
@@ -53,32 +51,11 @@ class ChatController extends Controller
     public function getMessages()
     {
         $attributes = request()->validate([
-            'sender_id' => ['int','required'],
-            'receiver_id' => ['int','required'],
-            'receiver_type' => ['string','required']
+            'conversation_id' => ['string','required']
         ]);
-
-        $senderId = $attributes['sender_id'];
-        $receiverId = $attributes['receiver_id'];
         
-        $query;
-        if($attributes['receiver_type'] == 'group'){
-            $query = Message::select('messages.*','users.name as sender_name')
-                            ->where('receiver_id', $attributes['receiver_id'])
-                            ->leftJoin('users','messages.sender_id','=','users.id');
-        }else{
-            $query = Message::select('messages.*','users.name as sender_name')
-            ->where(function ($query) use ($senderId, $receiverId) {
-                $query->where('sender_id', $senderId)
-                      ->where('receiver_id', $receiverId);
-            })->orWhere(function ($query) use ($senderId, $receiverId) {
-                $query->where('sender_id', $receiverId)
-                      ->where('receiver_id', $senderId);
-            })->leftJoin('users','messages.sender_id','=','users.id');
-        }
+        $messages = Message::where('conversation_id', $attributes['conversation_id'])->get();
 
-        $messages = $query->orderBy('created_at')->get();
-    
         return response()->json(['success' => true, 'data' => $messages]);
     }
 }

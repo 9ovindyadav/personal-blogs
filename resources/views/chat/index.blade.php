@@ -4,7 +4,11 @@
     <div class="flex flex-row h-full w-full overflow-x-hidden">
       @include('chat.sidebar',['user' => $user, 'conversations' => $conversations])
 
-      @include('chat.chat')
+        <div class="flex flex-col flex-auto h-full p-2" id="conversationContainer">
+            <div class="rounded-2xl flex justify-center items-center h-full bg-gray-100 p-2">
+                <h2 class="text-2xl">Select Conversation</h2>
+            </div>
+        </div>
     </div>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script>
@@ -13,10 +17,10 @@
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-        const chatContainerParent = document.getElementById('chatContainerParent');
-        const chatContainer = document.getElementById('chatContainer');
-        const messageInput = document.getElementById('messageInput');
-        const messageSendBtn = document.getElementById('messageSendBtn');
+        const conversationContainer = document.getElementById('conversationContainer');
+        let messageInput;
+        let chatContainerParent;
+        let chatContainer;
 
         const currentUser = @json($user);
         let currentConversation = null;
@@ -37,8 +41,26 @@
         }
         setupListeners();
 
-        function selectConversation(element, conversationId)
+        async function selectConversation(element, conversation)
         {
+            conversationContainer.innerHTML = await conversationContainerHtml(conversation);
+            chatContainerParent = document.getElementById('chatContainerParent');
+            chatContainer = document.getElementById('chatContainerParent');
+            messageInput = document.getElementById('messageInput');
+            const messageSendBtn = document.getElementById('messageSendBtn');
+
+            messageSendBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                sendMessage();
+            });
+
+            messageInput.addEventListener('keydown', function(e) {
+                if(e.key === 'Enter'){
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
             const siblings = element.parentNode.children;
             for (let i = 0; i < siblings.length; i++) {
                 siblings[i].classList.remove('bg-gray-300');
@@ -46,14 +68,14 @@
 
             element.classList.add('bg-gray-300');
             chatContainer.innerHTML = '';
-
-            currentConversation = conversationId;
-            // getMessages(conversationId);
-            const conversationElement = document.getElementById(`conversation-${conversationId}`);
+            console.log(conversation);
+            currentConversation = conversation.id;
+            await getMessages(conversation.id);
+            const conversationElement = document.getElementById(`conversation-${conversation.id}`);
             conversationElement.dataset.newMessageCount = 0;
             conversationElement.classList.add('hidden');
             
-            socket.on(`chat-${conversationId}`, function(message){
+            socket.on(`chat-${conversation.id}`, function(message){
                 console.log(message);
                 if(message.author_id != currentUser.id){
                     appendMessage(message.content, true, message.send_at, message.author_name);
@@ -79,10 +101,10 @@
             if(res.success && res.data.length > 0){
                 res.data.forEach((message) => {
 
-                    if(message.sender_id == senderId) {
-                        appendMessage(message.message, false, message.created_at);
+                    if(message.author_id == currentUser.id) {
+                        appendMessage(message.content, false, message.created_at);
                     }else{
-                        appendMessage(message.message, true, message.created_at, message.author_name);
+                        appendMessage(message.content, true, message.created_at, message.author_name);
                     } 
                 });
             }else{
@@ -117,18 +139,6 @@
                 console.log(res);
             }
         }
-
-        messageSendBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            sendMessage();
-        });
-
-        messageInput.addEventListener('keydown', function(e) {
-            if(e.key === 'Enter'){
-                e.preventDefault();
-                sendMessage();
-            }
-        });
 
         function appendMessage(message, isReceiver = false, timestamp = (new Date()).toISOString(), name = 'You'){
             
@@ -168,6 +178,69 @@
             }
 
             chatContainerParent.scrollTop = chatContainerParent.scrollHeight;
+        }
+
+        async function conversationContainerHtml(conversation)
+        {
+            return `
+                <div class="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-2">
+                    <div class="flex flex-row items-center h-16 rounded-xl bg-gray-200 w-full px-4">
+                        <div class="flex items-center justify-center h-8 w-8 bg-indigo-200 rounded-full">
+                            ${conversation.name[0]}
+                        </div>
+                        <div class="flex justify-between items-center w-full">
+                            <div class="ml-2 text-md font-semibold">${conversation.name}</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col h-full overflow-x-auto mb-4" id="chatContainerParent">
+                        <div class="flex flex-col h-full">
+                            <div class="grid grid-cols-12 gap-y-2" id="chatContainer">
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-row items-center h-16 rounded-xl bg-white w-full px-4">
+                        <div>
+                            <button class="flex items-center justify-center text-gray-400 hover:text-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="flex-grow ml-4">
+                            <div class="relative w-full">
+                                <input id="messageInput" type="text"
+                                    class="flex w-full border rounded-xl focus:outline-none focus:border-indigo-300 pl-4 h-10" />
+                                <button
+                                    class="absolute flex items-center justify-center h-full w-12 right-0 top-0 text-gray-400 hover:text-gray-600">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                        </path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <button id="messageSendBtn"
+                                class="flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 rounded-xl text-white px-4 pt-2 pb-3 flex-shrink-0">
+                                <!-- <span>Send</span> -->
+                                <span class="">
+                                    <svg class="w-6 h-6 transform rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                    </svg>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         function getTimeInAmPm(isoTimestamp)

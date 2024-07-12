@@ -13,14 +13,14 @@ class CreateMessagesTable extends Migration
      */
     public function up()
     {
-        Schema::create('messages', function (Blueprint $table) {
+        Schema::connection('mongodb')->create('messages', function (Blueprint $table) {
             $table->id();
             $table->uuid('conversation_id');
             $table->foreign('conversation_id')->references('id')->on('conversations')->onDelete('cascade');
             $table->unsignedBigInteger('author_id');
             $table->foreign('author_id')->references('id')->on('users')->onDelete('cascade');
             $table->text('content');
-            $table->enum('content_type',['text','image','video','doc'])->default('text');
+            $table->enum('content_type',['text','image','video'])->default('text');
             $table->timestamps();
         });
     }
@@ -32,6 +32,6 @@ class CreateMessagesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('messages');
+        Schema::connection('mongodb')->dropIfExists('messages');
     }
 }
