@@ -29,17 +29,108 @@
         function setupListeners() {
             conversations.forEach(conversation => {
                 
-                socket.on(`chat-${conversation.id}`, function(message){
+                socket.on(`chat_${conversation.id}`, function(message){
                     console.log(message);
                     if(message.author_id != currentUser.id){
                         const conversationElement = document.getElementById(`conversation-${conversation.id}`);
                         conversationElement.textContent = conversationElement.dataset.newMessageCount + 1;
                         conversationElement.classList.remove('hidden');
+
+                        sendToChannel(`conversation_${conversation.id}_message_status`, {
+                            conversation_id: conversation.id,
+                            message_id: message.message_id,
+                            receiver_id: currentUser.id,
+                            status: 'delivered',
+                            timestamp: (new Date()).toISOString()
+                        });
+
+                        if(currentConversation == conversation.id){
+                            appendMessage(message);
+
+                            sendToChannel(`conversation_${conversation.id}_message_status`, {
+                                conversation_id: conversation.id,
+                                message_id: message.message_id,
+                                receiver_id: currentUser.id,
+                                status: 'seen',
+                                timestamp: (new Date()).toISOString()
+                            });
+                        }
+                    }
+
+                });
+
+                socket.on(`conversation_${conversation.id}_message_status`, async (message) =>{
+                    
+                    if(message.receiver_id != currentUser.id){
+                        if(message.status == 'all_seen'){
+                            const messageStatusElements = document.querySelectorAll(`[data-id="conversation_${message.conversation_id}_message_status"]`);
+                           
+                            messageStatusElements.forEach((messageStatusElement) =>{
+                                messageStatusElement.classList.remove('fa-regular','text-gray-400');
+                                messageStatusElement.classList.add('fa-solid','text-green-400');
+                            });
+                            return;
+                        }
+
+                        let messageStatusElement = document.getElementById(`message_${message.message_id}_status`);
+                        
+                        switch(message.status){
+                            case 'delivered':
+                                messageStatusElement.classList.remove('fa-regular');
+                                messageStatusElement.classList.add('fa-solid','text-gray-400');
+                                break;
+                            case 'seen':
+                                messageStatusElement.classList.remove('text-gray-400');
+                                messageStatusElement.classList.add('text-green-400');
+                                break;
+                        }
+
+                        let res = await fetch('/message/status/update',{
+                            method: 'POST',
+                            headers:{
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(message)
+                        })
+
+                        res = await res.json();
+                        console.log(res);
                     }
                 });
             });
+
+            sendToChannel(
+                `user_${currentUser.username}_status`, 
+                {
+                    username: currentUser.username,
+                    status: 1,
+                    lastSeen: (new Date()).toISOString()
+                }
+            );
+
+            setInterval(()=>{
+                
+                sendToChannel(
+                    `user_${currentUser.username}_status`, 
+                    {
+                        username: currentUser.username,
+                        status: 1,
+                        lastSeen: (new Date()).toISOString()
+                    }
+                );
+
+            },5000);
+
         }
+
         setupListeners();
+
+        function sendToChannel(channel, message){
+
+            socket.emit('pblogs-messages', { channel, message});
+        
+        }
 
         async function selectConversation(element, conversation)
         {
@@ -48,6 +139,25 @@
             chatContainer = document.getElementById('chatContainerParent');
             messageInput = document.getElementById('messageInput');
             const messageSendBtn = document.getElementById('messageSendBtn');
+
+            if(conversation.type == 'private'){
+                let conversationStatusTimer;
+
+                socket.on(`user_${conversation.username}_status`, function(user){
+                   
+                    const conversationStatusElement = document.getElementById('conversationStatus');
+
+                    conversationStatusElement.innerHTML = '<span class="bg-green-100 text-green-800 me-2 px-2 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300" style="font-size: 9px">Online</span>';
+
+                    if(conversationStatusTimer){
+                        clearTimeout(conversationStatusTimer);
+                    }
+
+                    conversationStatusTimer = setTimeout(()=>{
+                        conversationStatusElement.innerHTML = '<span class="bg-gray-100 text-gray-800 me-2 px-2 py-0.5 rounded-full dark:bg-gray-900 dark:text-gray-300" style="font-size: 9px">Offline</span>';
+                    },6000);
+                });
+            }
 
             messageSendBtn.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -68,18 +178,18 @@
 
             element.classList.add('bg-gray-300');
             chatContainer.innerHTML = '';
-            console.log(conversation);
+           
             currentConversation = conversation.id;
             await getMessages(conversation.id);
             const conversationElement = document.getElementById(`conversation-${conversation.id}`);
             conversationElement.dataset.newMessageCount = 0;
             conversationElement.classList.add('hidden');
-            
-            socket.on(`chat-${conversation.id}`, function(message){
-                console.log(message);
-                if(message.author_id != currentUser.id){
-                    appendMessage(message.content, true, message.send_at, message.author_name);
-                }
+        
+            sendToChannel(`conversation_${currentConversation}_message_status`, {
+                conversation_id: currentConversation,
+                receiver_id: currentUser.id,
+                status: 'all_seen',
+                timestamp: (new Date()).toISOString()
             });
         }
 
@@ -97,15 +207,10 @@
             });
 
             res = await res.json();
-            console.log(res);
+           
             if(res.success && res.data.length > 0){
                 res.data.forEach((message) => {
-
-                    if(message.author_id == currentUser.id) {
-                        appendMessage(message.content, false, message.created_at);
-                    }else{
-                        appendMessage(message.content, true, message.created_at, message.author_name);
-                    } 
+                    appendMessage(message);
                 });
             }else{
                 chatContainer.innerHTML = '';
@@ -117,65 +222,67 @@
         {
             if(messageInput.value && currentConversation){
                 
-                appendMessage(messageInput.value);
+                const message = {
+                    content: messageInput.value, 
+                    content_type: 'text',
+                    author_id: currentUser.id,
+                    author_name: currentUser.name,
+                    conversation_id: currentConversation,
+                    send_at: (new Date()).toISOString(),
+                    message_id: `${currentConversation}_${currentUser.username}_${Date.now()}`,
+                    status: 'sent'
+                };
+
+                appendMessage(message);
                 
-                const formData = new FormData();
-                formData.append('content',messageInput.value);
-                formData.append('content_type','text');
-                formData.append('author_id', currentUser.id);
-                formData.append('author_name', currentUser.name);
-                formData.append('conversation_id',currentConversation);
-                formData.append('send_at',(new Date()).toISOString());
                 let res = await fetch('/message/send',{
                     method:'POST',
                     headers: {
-                        'X-CSRF-TOKEN': csrfToken
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Content-Type': 'application/json'
                     },
-                    body: formData
+                    body: JSON.stringify(message)
                 });
 
                 res = await res.json();
                 messageInput.value = '';
-                console.log(res);
+        
             }
         }
 
-        function appendMessage(message, isReceiver = false, timestamp = (new Date()).toISOString(), name = 'You'){
+        function appendMessage(message){
             
-            if(isReceiver){
-                chatContainer.innerHTML += `<div class="col-start-1 col-end-8 p-3 rounded-lg">
-                            <div class="flex flex-row items-center">
-                                <div class="relative min-w-32 text-sm bg-white py-2 px-4 shadow rounded-xl">
-                                <div class="absolute top-0 left-2 text-red-500" style="font-size: 0.6rem">
-                                    ${name}
-                                </div>
-                                <div class="absolute top-0 right-2 text-gray-500" style="font-size: 0.6rem">
-                                    ${getTimeInAmPm(timestamp)}
-                                </div>
-                                <div class="mt-2">
-                                    ${message}
-                                </div>
-                                </div>
-                            </div>
-                            </div>
-                        </div>`;
-            }else{
-                chatContainer.innerHTML += `<div class="col-start-6 col-end-13 p-3 rounded-lg">
-                            <div class="flex items-center justify-start flex-row-reverse">
-                                <div class="relative min-w-20 mr-3 text-sm text-right bg-indigo-100 py-2 px-4 shadow rounded-xl">
-                                <div class="absolute top-0 left-2 text-red-500" style="font-size: 0.6rem">
-                                    ${name}
-                                </div>
-                                <div class="absolute top-0 right-2 text-gray-500" style="font-size: 0.6rem">
-                                    ${getTimeInAmPm(timestamp)}
-                                </div>
-                                <div class="mt-2">
-                                    ${message}
-                                </div>
-                                </div>
-                            </div>
-                        </div>`;
+            let messageStatusClass;
+            switch(message.status){
+                case 'sent':
+                    messageStatusClass = 'fa-regular';
+                    break;
+                case 'delivered':
+                    messageStatusClass = 'fa-regular text-gray-400';
+                    break;
+                case 'seen':
+                    messageStatusClass = 'fa-solid text-green-400'
+                    break;
             }
+
+            chatContainer.innerHTML += `<div class="col-start-1 col-end-8 p-3 rounded-lg">
+                            <div class="${message.author_id != currentUser.id ? 'flex flex-row items-center' : 'flex items-center justify-start flex-row-reverse'}">
+                                <div class="relative min-w-32 text-sm ${message.author_id != currentUser.id ? 'bg-white py-2 px-4 shadow rounded-xl' : 'mr-3 bg-indigo-100 py-2 px-4 shadow rounded-xl'}"
+                                    id="${message.message_id}">
+                                    <div class="absolute top-0 left-2 text-red-500" style="font-size: 0.6rem">
+                                        ${message.author_name}
+                                    </div>
+                                    <div class="absolute top-0 right-2 text-gray-500" style="font-size: 0.6rem">
+                                        ${getTimeInAmPm(message.send_at)}
+                                    </div>
+                                    <div class="mt-2">
+                                        ${message.content}
+                                    </div>
+                                    ${ message.author_id == currentUser.id ? `<i data-id="conversation_${message.conversation_id}_message_status" id="message_${message.message_id}_status" class="${messageStatusClass} fa-circle-check absolute bottom-1 right-1" style="font-size: 10px"></i>`:''}
+                                </div>
+                            </div>
+                            </div>
+                        </div>`;
 
             chatContainerParent.scrollTop = chatContainerParent.scrollHeight;
         }
@@ -188,8 +295,9 @@
                         <div class="flex items-center justify-center h-8 w-8 bg-indigo-200 rounded-full">
                             ${conversation.name[0]}
                         </div>
-                        <div class="flex justify-between items-center w-full">
-                            <div class="ml-2 text-md font-semibold">${conversation.name}</div>
+                        <div class="w-full ml-2">
+                            <div class="text-md font-semibold">${conversation.name}</div>
+                            <div class="m-0 p-0" style="font-size: 10px" id="conversationStatus"></div>
                         </div>
                     </div>
                     <div class="flex flex-col h-full overflow-x-auto mb-4" id="chatContainerParent">

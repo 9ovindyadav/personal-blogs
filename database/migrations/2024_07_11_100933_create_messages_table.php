@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use Jenssegers\Mongodb\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 class CreateMessagesTable extends Migration
@@ -13,15 +13,15 @@ class CreateMessagesTable extends Migration
      */
     public function up()
     {
-        Schema::connection('mongodb')->create('messages', function (Blueprint $table) {
-            $table->id();
-            $table->uuid('conversation_id');
-            $table->foreign('conversation_id')->references('id')->on('conversations')->onDelete('cascade');
-            $table->unsignedBigInteger('author_id');
-            $table->foreign('author_id')->references('id')->on('users')->onDelete('cascade');
-            $table->text('content');
-            $table->enum('content_type',['text','image','video'])->default('text');
-            $table->timestamps();
+        Schema::connection('mongodb')->create('messages', function (Blueprint $collection) {
+            $collection->id();
+            $collection->uuid('conversation_id');
+            $collection->unsignedBigInteger('author_id');
+            $collection->string('author_name');
+            $collection->text('content');
+            $collection->enum('content_type',['text','image','video']);
+            $collection->enum('status',['sent','delivered','seen']);
+            $collection->timestamps();
         });
     }
 

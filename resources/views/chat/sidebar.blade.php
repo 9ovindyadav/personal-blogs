@@ -33,13 +33,15 @@
                     $conversation = new StdClass();
                     $conversation->id = $c->id;
                     $conversation->name = $c->name;
-
+                    $conversation->type = $c->type;
+            
                     if($c->type === 'private'){
                         $otherUser = $c->users->reject(function ($otherUser) use ($user) {
                             return $otherUser->id === $user->id;
                         })->first();
                         $conversation->name = $otherUser->name;
                         $conversation->profile_img = $otherUser->profile_img;
+                        $conversation->username = $otherUser->username;
                     }
 
                 @endphp

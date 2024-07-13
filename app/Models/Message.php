@@ -17,6 +17,8 @@ class Message extends Model
         'author_id',
         'author_name',
         'conversation_id',
-        'send_at'
+        'send_at',
+        'message_id',
+        'status'
     ];
 }

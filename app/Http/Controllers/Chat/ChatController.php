@@ -12,6 +12,8 @@ use App\Events\MessageReceived;
 use App\Models\Message;
 use App\Models\User;
 
+use App\Jobs\UpdateMessageStatusJob;
+
 class ChatController extends Controller
 {
     public function index(Request $request)
@@ -30,7 +32,9 @@ class ChatController extends Controller
             'author_id' => ['int','required'],
             'author_name' => ['string'],
             'conversation_id' => ['string','required'],
-            'send_at' => []
+            'send_at' => ['required'],
+            'status' => ['required'],
+            'message_id' => ['string','required']
         ]);
 
         $options = ['client' => WebSocketClient::CLIENT_4X];
@@ -39,7 +43,7 @@ class ChatController extends Controller
         $client->connect();
         $client->of('/');
         
-        $data = ['channel' => "chat-{$attributes['conversation_id']}", 'message' => $attributes];
+        $data = ['channel' => "chat_{$attributes['conversation_id']}", 'message' => $attributes];
         $client->emit("pblogs-messages", $data);
         
         $client->disconnect();
@@ -57,5 +61,25 @@ class ChatController extends Controller
         $messages = Message::where('conversation_id', $attributes['conversation_id'])->get();
 
         return response()->json(['success' => true, 'data' => $messages]);
+    }
+
+    public function updateMessageStatus()
+    {
+        $attributes = request()->validate([
+            'conversation_id' => 'required|string',
+            'status' => 'required|string',
+            'message_id' => '',
+            'receiver_id' => 'required|int',
+            'timestamp' => 'required'
+        ]);
+
+        UpdateMessageStatusJob::dispatch($attributes);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function updateUserLastSeen()
+    {
+
     }
 }

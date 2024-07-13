@@ -61,7 +61,8 @@ Route::middleware(['auth','verified'])->group(function (){
 
     Route::get('/chats',[ChatController::class,'index']);
     Route::post('/message/send',[ChatController::class,'sendMessage']);
-    Route::post('/messages',[ChatController::class,'getMessages']); 
+    Route::post('/messages',[ChatController::class,'getMessages']);
+    Route::post('/message/status/update',[ChatController::class,'updateMessageStatus']); 
 
     Route::get('/conversation/create',[ConversationController::class,'create']);
     Route::post('/conversation/store',[ConversationController::class,'store']);
