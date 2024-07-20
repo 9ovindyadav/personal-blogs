@@ -20,7 +20,10 @@
         "laravelcollective/html": "^6.4",
         "mongodb/laravel-mongodb": "^3.8",
         "predis/predis": "^2.2",
-        "pusher/pusher-php-server": "^7.2"
+        "pusher/pusher-php-server": "^7.2",
+        "ratchet/pawl": "^0.4.1",
+        "ratchet/rfc6455": "^0.3.1",
+        "react/socket": "^1.15"
     },
     "require-dev": {
         "facade/ignition": "^2.3.6",

@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Chat;
 
 use Illuminate\Http\Request;
-use ElephantIO\Client as WebSocketClient;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
-
+use ElephantIO\Client as WebSocketClient;
 use App\Http\Controllers\Controller;
 use App\Events\MessageReceived;
 use App\Models\Message;

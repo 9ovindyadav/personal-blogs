@@ -10,126 +10,167 @@
             </div>
         </div>
     </div>
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script>
 
-        const socket = io("{{ env('WEBSOCKET_URL') }}");
-
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
+        const currentUser = @json($user);
+        const conversations = @json($conversations);
+        
         const conversationContainer = document.getElementById('conversationContainer');
         let messageInput;
         let chatContainerParent;
         let chatContainer;
 
-        const currentUser = @json($user);
         let currentConversation = null;
-        const conversations = @json($conversations);
+
+        const webSocket = new WebSocket(`ws://localhost:8080/ws?client_id=${currentUser.id}`);
         
-        function setupListeners() {
-            conversations.forEach(conversation => {
+        function connect() {
+            webSocket.onopen = () => {
+                console.log('Connected to the WebSocket server');
                 
-                socket.on(`chat_${conversation.id}`, function(message){
-                    console.log(message);
-                    if(message.author_id != currentUser.id){
-                        const conversationElement = document.getElementById(`conversation-${conversation.id}`);
-                        conversationElement.textContent = conversationElement.dataset.newMessageCount + 1;
-                        conversationElement.classList.remove('hidden');
+                const channels = [];
 
-                        sendToChannel(`conversation_${conversation.id}_message_status`, {
-                            conversation_id: conversation.id,
-                            message_id: message.message_id,
-                            receiver_id: currentUser.id,
-                            status: 'delivered',
-                            timestamp: (new Date()).toISOString()
-                        });
+                conversations.forEach((conversation)=>{
+                    channels.push(`conversation_${conversation.id}`);
+                });
+                
+                // Send a message to join multiple channels
+                const joinMessage = {
+                    type: 'join',
+                    channels
+                };
+                webSocket.send(JSON.stringify(joinMessage));
 
-                        if(currentConversation == conversation.id){
-                            appendMessage(message);
+                sendUserStatus();
+                setInterval(sendUserStatus, 5000);
+            };
 
-                            sendToChannel(`conversation_${conversation.id}_message_status`, {
-                                conversation_id: conversation.id,
+            let conversationStatusTimer;
+
+            webSocket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                const message = JSON.parse(data.data);
+            
+                console.log(message);
+                switch(message.message_type){
+                    case 'conversation_message':
+
+                        if(message.author_username != currentUser.username){
+                            const conversationElement = document.getElementById(`conversation-${message.conversation_id}`);
+                            conversationElement.textContent = conversationElement.dataset.newMessageCount + 1;
+                            conversationElement.classList.remove('hidden');
+
+                            let messageStatus = 'delivered';
+                            if(currentConversation.id == message.conversation_id){
+                                appendMessage(message);
+                                messageStatus = 'seen';
+                            }
+
+                            sendToChannel(`conversation_${message.conversation_id}`, {
+                                message_type: 'read_receipt',
+                                conversation_id: message.conversation_id,
                                 message_id: message.message_id,
-                                receiver_id: currentUser.id,
-                                status: 'seen',
+                                receiver_username: currentUser.username,
+                                status: messageStatus,
                                 timestamp: (new Date()).toISOString()
                             });
                         }
-                    }
+                        break;
 
-                });
+                    case 'read_receipt':
 
-                socket.on(`conversation_${conversation.id}_message_status`, async (message) =>{
-                    
-                    if(message.receiver_id != currentUser.id){
-                        if(message.status == 'all_seen'){
-                            const messageStatusElements = document.querySelectorAll(`[data-id="conversation_${message.conversation_id}_message_status"]`);
-                           
-                            messageStatusElements.forEach((messageStatusElement) =>{
-                                messageStatusElement.classList.remove('fa-regular','text-gray-400');
-                                messageStatusElement.classList.add('fa-solid','text-green-400');
-                            });
-                            return;
+                        if(message.receiver_username != currentUser.username){
+                            if(message.status == 'all_seen'){
+                                const messageStatusElements = document.querySelectorAll(`[data-id="conversation_${message.conversation_id}_message_status"]`);
+                            
+                                messageStatusElements.forEach((messageStatusElement) =>{
+                                    messageStatusElement.classList.remove('fa-regular','text-gray-400');
+                                    messageStatusElement.classList.add('fa-solid','text-green-400');
+                                });
+                                return;
+                            }
+
+                            let messageStatusElement = document.getElementById(`message_${message.message_id}_status`);
+                            
+                            switch(message.status){
+                                case 'delivered':
+                                    messageStatusElement.classList.remove('fa-regular');
+                                    messageStatusElement.classList.add('fa-solid','text-gray-400');
+                                    break;
+                                case 'seen':
+                                    messageStatusElement.classList.remove('fa-regular','text-gray-400');
+                                    messageStatusElement.classList.add('fa-solid','text-green-400');
+                                    break;
+                            }
                         }
-
-                        let messageStatusElement = document.getElementById(`message_${message.message_id}_status`);
+                        break;
+                    case 'user_status':
                         
-                        switch(message.status){
-                            case 'delivered':
-                                messageStatusElement.classList.remove('fa-regular');
-                                messageStatusElement.classList.add('fa-solid','text-gray-400');
-                                break;
-                            case 'seen':
-                                messageStatusElement.classList.remove('text-gray-400');
-                                messageStatusElement.classList.add('text-green-400');
-                                break;
+                        if(message.username == currentConversation.username){
+                            const  conversationStatusElement = document.getElementById('conversationStatus');
+                            conversationStatusElement.innerHTML = '<span class="bg-green-100 text-green-800 me-2 px-2 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300" style="font-size: 9px">Online</span>';
+
+                            if(conversationStatusTimer){
+                                clearTimeout(conversationStatusTimer);
+                            }
+
+                            conversationStatusTimer = setTimeout(()=>{
+                                conversationStatusElement.innerHTML = '<span class="bg-gray-100 text-gray-800 me-2 px-2 py-0.5 rounded-full dark:bg-gray-900 dark:text-gray-300" style="font-size: 9px">Offline</span>';
+                            },6000);
                         }
 
-                        let res = await fetch('/message/status/update',{
-                            method: 'POST',
-                            headers:{
-                                'X-CSRF-TOKEN': csrfToken,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(message)
-                        })
-
-                        res = await res.json();
-                        console.log(res);
-                    }
-                });
-            });
-
-            sendToChannel(
-                `user_${currentUser.username}_status`, 
-                {
-                    username: currentUser.username,
-                    status: 1,
-                    lastSeen: (new Date()).toISOString()
+                        break;
                 }
-            );
+            };
 
-            setInterval(()=>{
+            webSocket.onclose = () => {
+                console.log('Disconnected from the WebSocket server');
+            };
+
+            webSocket.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        connect();
+
+        // function setupListeners() {
+        //     conversations.forEach(conversation => {
                 
-                sendToChannel(
+        //         socket.on(`chat_${conversation.id}`, function(message){
+        //             console.log(message);
+        //             
+
+        //         });
+
+        //         socket.on(`conversation_${conversation.id}_message_status`, async (message) =>{
+                    
+        //            
+        //         });
+        //     });
+
+        // }
+
+        // setupListeners();
+
+        function sendToChannel(channel, message){
+
+            webSocket.send(JSON.stringify({channel_id: channel, data: JSON.stringify(message)}));
+        
+        }
+
+        function sendUserStatus()
+        {
+            sendToChannel(
                     `user_${currentUser.username}_status`, 
                     {
+                        message_type: 'user_status',
                         username: currentUser.username,
                         status: 1,
                         lastSeen: (new Date()).toISOString()
                     }
                 );
-
-            },5000);
-
-        }
-
-        setupListeners();
-
-        function sendToChannel(channel, message){
-
-            socket.emit('pblogs-messages', { channel, message});
-        
         }
 
         async function selectConversation(element, conversation)
@@ -138,25 +179,16 @@
             chatContainerParent = document.getElementById('chatContainerParent');
             chatContainer = document.getElementById('chatContainerParent');
             messageInput = document.getElementById('messageInput');
+           
             const messageSendBtn = document.getElementById('messageSendBtn');
 
             if(conversation.type == 'private'){
-                let conversationStatusTimer;
 
-                socket.on(`user_${conversation.username}_status`, function(user){
-                   
-                    const conversationStatusElement = document.getElementById('conversationStatus');
-
-                    conversationStatusElement.innerHTML = '<span class="bg-green-100 text-green-800 me-2 px-2 py-0.5 rounded-full dark:bg-green-900 dark:text-green-300" style="font-size: 9px">Online</span>';
-
-                    if(conversationStatusTimer){
-                        clearTimeout(conversationStatusTimer);
-                    }
-
-                    conversationStatusTimer = setTimeout(()=>{
-                        conversationStatusElement.innerHTML = '<span class="bg-gray-100 text-gray-800 me-2 px-2 py-0.5 rounded-full dark:bg-gray-900 dark:text-gray-300" style="font-size: 9px">Offline</span>';
-                    },6000);
-                });
+                const joinMessage = {
+                    type: 'join',
+                    channels: [`user_${conversation.username}_status`]
+                };
+                webSocket.send(JSON.stringify(joinMessage));
             }
 
             messageSendBtn.addEventListener('click', function(e) {
@@ -179,15 +211,16 @@
             element.classList.add('bg-gray-300');
             chatContainer.innerHTML = '';
            
-            currentConversation = conversation.id;
+            currentConversation = conversation;
             await getMessages(conversation.id);
             const conversationElement = document.getElementById(`conversation-${conversation.id}`);
             conversationElement.dataset.newMessageCount = 0;
             conversationElement.classList.add('hidden');
         
-            sendToChannel(`conversation_${currentConversation}_message_status`, {
-                conversation_id: currentConversation,
-                receiver_id: currentUser.id,
+            sendToChannel(`conversation_${currentConversation.id}`, {
+                message_type: 'read_receipt',
+                conversation_id: currentConversation.id,
+                receiver_username: currentUser.username,
                 status: 'all_seen',
                 timestamp: (new Date()).toISOString()
             });
@@ -223,35 +256,28 @@
             if(messageInput.value && currentConversation){
                 
                 const message = {
+                    message_type: 'conversation_message',
                     content: messageInput.value, 
                     content_type: 'text',
-                    author_id: currentUser.id,
+                    author_username: currentUser.username,
                     author_name: currentUser.name,
-                    conversation_id: currentConversation,
+                    conversation_id: currentConversation.id,
                     send_at: (new Date()).toISOString(),
-                    message_id: `${currentConversation}_${currentUser.username}_${Date.now()}`,
+                    message_id: `${currentConversation.id}_${currentUser.username}_${Date.now()}`,
                     status: 'sent'
                 };
 
                 appendMessage(message);
                 
-                let res = await fetch('/message/send',{
-                    method:'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(message)
-                });
+                sendToChannel( `conversation_${currentConversation.id}`, message);
 
-                res = await res.json();
                 messageInput.value = '';
         
             }
         }
 
         function appendMessage(message){
-            
+            const isCurrentUser = message.author_username == currentUser.username ;
             let messageStatusClass;
             switch(message.status){
                 case 'sent':
@@ -266,8 +292,8 @@
             }
 
             chatContainer.innerHTML += `<div class="col-start-1 col-end-8 p-3 rounded-lg">
-                            <div class="${message.author_id != currentUser.id ? 'flex flex-row items-center' : 'flex items-center justify-start flex-row-reverse'}">
-                                <div class="relative min-w-32 text-sm ${message.author_id != currentUser.id ? 'bg-white py-2 px-4 shadow rounded-xl' : 'mr-3 bg-indigo-100 py-2 px-4 shadow rounded-xl'}"
+                            <div class="${ !isCurrentUser ? 'flex flex-row items-center' : 'flex items-center justify-start flex-row-reverse'}">
+                                <div class="relative min-w-32 text-sm ${ !isCurrentUser ? 'bg-white py-2 px-4 shadow rounded-xl' : 'mr-3 bg-indigo-100 py-2 px-4 shadow rounded-xl'}"
                                     id="${message.message_id}">
                                     <div class="absolute top-0 left-2 text-red-500" style="font-size: 0.6rem">
                                         ${message.author_name}
@@ -278,7 +304,7 @@
                                     <div class="mt-2">
                                         ${message.content}
                                     </div>
-                                    ${ message.author_id == currentUser.id ? `<i data-id="conversation_${message.conversation_id}_message_status" id="message_${message.message_id}_status" class="${messageStatusClass} fa-circle-check absolute bottom-1 right-1" style="font-size: 10px"></i>`:''}
+                                    ${ isCurrentUser ? `<i data-id="conversation_${message.conversation_id}_message_status" id="message_${message.message_id}_status" class="${messageStatusClass} fa-circle-check absolute bottom-1 right-1" style="font-size: 10px"></i>`:''}
                                 </div>
                             </div>
                             </div>
