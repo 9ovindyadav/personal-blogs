@@ -8,6 +8,10 @@ BUILD_DIR="docs-build"
 BRANCH="gh-pages"
 BUILD_SUBDIR="docs"  # Adjust this if the package.json is in a different subdirectory
 
+# Check out the gh-pages branch, or create it if it does not exist
+echo "Switching to $BRANCH branch..."
+git checkout $BRANCH || git checkout --orphan $BRANCH
+
 # Build the project
 echo "Building the project..."
 cd $BUILD_SUBDIR
@@ -21,9 +25,6 @@ if [ ! -d "$BUILD_DIR" ]; then
   exit 1
 fi
 
-# Check out the gh-pages branch, or create it if it does not exist
-echo "Switching to $BRANCH branch..."
-git checkout $BRANCH || git checkout --orphan $BRANCH
 
 # Remove all files in the gh-pages branch, excluding the docs directory
 echo "Removing all files except for $BUILD_DIR..."
