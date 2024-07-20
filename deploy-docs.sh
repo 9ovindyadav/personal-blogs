@@ -27,11 +27,11 @@ git checkout $BRANCH || git checkout --orphan $BRANCH
 
 # Remove all files in the gh-pages branch, excluding the docs directory
 echo "Removing all files except for $BUILD_DIR..."
-rm -rf docs
+git rm -rf docs
 
 # Copy the build files to the root of the gh-pages branch
 echo "Copying build files to $BRANCH branch..."
-mv docs-build docs
+git mv docs-build docs
 
 # Add all files to the git index
 echo "Adding files to git..."
