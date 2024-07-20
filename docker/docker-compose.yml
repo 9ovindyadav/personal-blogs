@@ -1,0 +1,72 @@
+
+
+services:
+
+  php-server:
+    build:
+      context: ../
+      dockerfile: docker/php/Dockerfile
+    container_name: php-server
+    volumes:
+      - ../:/var/www/html
+    ports:
+      - 8000:80
+    depends_on:
+      - mysql
+      - mongodb
+      - redis
+    env_file:
+      - ../.env.production
+
+  job-server:
+    build:
+      context: ../
+      dockerfile: docker/php/Dockerfile
+    container_name: job-server
+    volumes:
+      - ../:/var/www/html
+    depends_on:
+      - mysql
+      - mongodb
+      - redis
+    env_file:
+      - ../.env.production
+
+  mysql:
+    image: mysql:8.0-bookworm
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pblogs
+      MYSQL_USER: govind
+      MYSQL_PASSWORD: govind
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  mongodb:
+    image: mongo:7-jammy
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    volumes:
+      - mongodb_data:/data/db
+
+  redis:
+    image: redis:7-bookworm
+    container_name: redis
+
+  golang:
+    build:
+      context: ../
+      dockerfile: docker/golang/Dockerfile
+    container_name: golang
+    volumes:
+      - ../go-wss:/go/src/app
+    ports:
+      - 8080:8080
+
+volumes:
+  mysql_data:
+  mongodb_data:
+  supervisor:
