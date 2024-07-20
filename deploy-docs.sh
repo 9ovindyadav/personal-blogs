@@ -10,7 +10,7 @@ BUILD_SUBDIR="docs"  # Adjust this if the package.json is in a different subdire
 
 # Check out the gh-pages branch, or create it if it does not exist
 echo "Switching to $BRANCH branch..."
-git checkout $BRANCH || git checkout --orphan $BRANCH
+git switch $BRANCH
 
 # Build the project
 echo "Building the project..."
@@ -48,6 +48,6 @@ git push origin $BRANCH
 
 # Switch back to the main branch
 echo "Switching back to docs branch..."
-git checkout docs
+git switch docs
 
 echo "Deployment complete."
